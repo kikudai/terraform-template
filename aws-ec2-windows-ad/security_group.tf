@@ -1,11 +1,13 @@
 resource "aws_security_group" "windows_sg" {
-  vpc_id = aws_vpc.main.id
+  name        = "WindowsADSecurityGroup"
+  description = "Security group for Windows AD server"
+  vpc_id      = aws_vpc.main.id
 
   ingress {
     from_port   = 3389
     to_port     = 3389
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = [var.my_ip]  # 🔹 自分の IP のみに制限
   }
 
   ingress {

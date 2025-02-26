@@ -30,7 +30,21 @@
 terraform init
 ```
 
-### 2. スポットインスタンスの価格確認
+### 2. Windows Server 2019 日本語版の AMI 確認
+
+AWS CLI を使用して、東京リージョン (`ap-northeast-1`) の **最新の Windows Server 2019 日本語版 AMI** を取得できます。
+
+```sh
+aws ec2 describe-images \
+  --owners "amazon" \
+  --filters "Name=name,Values=Windows_Server-2019-Japanese-Full-Base-*" \
+  --query "Images | sort_by(@, &CreationDate) | [-1].ImageId" \
+  --region ap-northeast-1
+```
+
+取得した AMI ID を `variables.tf` の `windows_2019_ami` に設定してください。
+
+### 3. スポットインスタンスの価格確認
 
 AWS CLI を使用して、東京リージョン (`ap-northeast-1`) の `t3.medium` の最新スポット価格を確認できます。
 
@@ -43,10 +57,20 @@ aws ec2 describe-spot-price-history \
   --query 'SpotPriceHistory[0].SpotPrice'
 ```
 
-### 3. Terraform Plan で変更内容を確認
+### 3. RDP 接続用に自分の IP を取得
+
+Terraform 実行前に、自分のグローバル IP アドレスを取得し、環境変数として設定します。
 
 ```sh
-terraform plan -var="spot_price=0.0366" -var="availability_zone=ap-northeast-1c"
+echo $(curl -s https://checkip.amazonaws.com)/32
+```
+
+これにより、自分のグローバル IP のみを RDP 接続許可対象にできます。
+
+### 4. Terraform Plan で変更内容を確認
+
+```sh
+terraform plan -var="spot_price=0.0366" -var="availability_zone=ap-northeast-1c" -var="my_ip=<MY_IP>"
 ```
 
 ### 4. インフラの適用
@@ -60,7 +84,7 @@ terraform apply -auto-approve
 特定のスポット価格や AZ を指定して適用:
 
 ```sh
-terraform apply -var="spot_price=0.0366" -var="availability_zone=ap-northeast-1c" -auto-approve
+terraform apply -var="spot_price=0.0366" -var="availability_zone=ap-northeast-1c" -var="my_ip=<MY_IP>" -auto-approve
 ```
 
 **成功すると、スポットインスタンスの EC2 上に Windows Server 2019 が作成され、AD ドメイン (`example.local`) が設定されます。**
