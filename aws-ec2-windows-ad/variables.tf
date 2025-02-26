@@ -7,5 +7,6 @@ variable "windows_2019_ami" {
 }
 
 variable "key_name" {
-  default = "windows_ad_key"
+  description = "EC2 にアクセスするための SSH キーペア"
+  default     = "windows_ad_key"
 }
