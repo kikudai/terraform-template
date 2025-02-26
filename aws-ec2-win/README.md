@@ -11,7 +11,7 @@
 ## 構成
 
 ```
-/terraform-windows-ad
+/aws-windows-ad
 ├── main.tf             # AWS Provider、VPC、EC2 定義
 ├── key.tf              # キーペアの自動生成
 ├── variables.tf        # 変数定義
