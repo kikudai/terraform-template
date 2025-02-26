@@ -1,7 +1,7 @@
-output "windows_ad_private_ip" {
-  value = aws_instance.windows_ad.private_ip
+output "windows_ad_public_ip" {
+  value = aws_spot_instance_request.windows_ad.public_ip
 }
 
-output "windows_ad_public_ip" {
-  value = aws_instance.windows_ad.public_ip
+output "private_key_path" {
+  value = "${path.module}/windows_ad_key.pem"
 }

@@ -19,8 +19,8 @@ resource "aws_spot_instance_request" "windows_ad" {
   subnet_id              = aws_subnet.public.id
   security_groups        = [aws_security_group.windows_sg.name]
   iam_instance_profile   = aws_iam_instance_profile.ec2_profile.name
-  key_name               = var.key_name
-  spot_price             = var.spot_price  # 変数でスポット価格を指定
+  key_name               = aws_key_pair.generated_key.key_name  # 生成したキーペアを適用
+  spot_price             = var.spot_price
   wait_for_fulfillment   = true
 
   user_data = file("userdata.ps1")
