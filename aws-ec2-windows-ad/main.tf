@@ -17,7 +17,7 @@ resource "aws_spot_instance_request" "windows_ad" {
   ami                    = var.windows_2019_ami
   instance_type          = "t3.medium"
   subnet_id              = aws_subnet.public.id
-  security_groups        = [aws_security_group.windows_sg.name]
+  vpc_security_group_ids = [aws_security_group.windows_sg.id]
   iam_instance_profile   = aws_iam_instance_profile.ec2_profile.name
   key_name               = aws_key_pair.generated_key.key_name  # 生成したキーペアを適用
   spot_price             = var.spot_price

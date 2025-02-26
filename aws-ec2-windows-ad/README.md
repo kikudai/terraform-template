@@ -43,7 +43,13 @@ aws ec2 describe-spot-price-history \
   --query 'SpotPriceHistory[0].SpotPrice'
 ```
 
-### 3. インフラの適用
+### 3. Terraform Plan で変更内容を確認
+
+```sh
+terraform plan -var="spot_price=0.0366" -var="availability_zone=ap-northeast-1c"
+```
+
+### 4. インフラの適用
 
 デフォルトのスポット価格 (`0.0357`) と AZ (`ap-northeast-1d`) を使用:
 
