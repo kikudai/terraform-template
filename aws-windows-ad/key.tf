@@ -10,6 +10,11 @@ resource "aws_key_pair" "generated_key" {
   public_key = tls_private_key.windows_key.public_key_openssh
 }
 
+variable "key_name" {
+  description = "EC2 にアクセスするための SSH キーペア"
+  default     = "windows_ad_key"  # デフォルトのキーペア名を指定
+}
+
 # 生成した秘密鍵をローカルに保存
 resource "local_file" "private_key" {
   content  = tls_private_key.windows_key.private_key_pem
