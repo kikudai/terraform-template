@@ -29,3 +29,8 @@ resource "aws_spot_instance_request" "windows_ad" {
     Name = "WindowsADServer"
   }
 }
+
+module "network" {
+  source                  = "./network"
+  enable_internet_gateway = var.enable_internet_gateway
+}

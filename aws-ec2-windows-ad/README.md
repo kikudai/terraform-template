@@ -14,10 +14,11 @@
 /aws-windows-ad
 ├── main.tf             # AWS Provider、VPC、EC2 定義
 ├── key.tf              # キーペアの自動生成
-├── variables.tf        # 変数定義
+├── variables.tf        # 変数定義 (IGW 有無の切り替え追加)
 ├── outputs.tf          # 出力値定義
 ├── security_group.tf   # セキュリティグループ設定
 ├── iam.tf              # IAM ロール設定
+├── network.tf          # ✅ 新規追加: IGW & ルートテーブル設定
 ├── userdata.ps1        # Windows Server の初期設定 (AD のセットアップ)
 ├── README.md           # 手順説明
 ```
@@ -69,22 +70,31 @@ echo $(curl -s https://checkip.amazonaws.com)/32
 
 ### 4. Terraform Plan で変更内容を確認
 
-```sh
-terraform plan -var="spot_price=0.0366" -var="availability_zone=ap-northeast-1c" -var="my_ip=<MY_IP>"
+```bash
+terraform plan \
+  -var="spot_price=0.0366" \
+  -var="availability_zone=ap-northeast-1c" \
+  -var="my_ip=147.192.26.108/32" \
+  -var="enable_internet_gateway=true"
 ```
 
 ### 4. インフラの適用
 
 デフォルトのスポット価格 (`0.0357`) と AZ (`ap-northeast-1d`) を使用:
 
-```sh
+```bash
 terraform apply -auto-approve
 ```
 
 特定のスポット価格や AZ を指定して適用:
 
-```sh
-terraform apply -var="spot_price=0.0366" -var="availability_zone=ap-northeast-1c" -var="my_ip=<MY_IP>" -auto-approve
+```bash
+terraform apply \
+  -var="spot_price=0.0366" \
+  -var="availability_zone=ap-northeast-1c" \
+  -var="my_ip=147.192.26.108/32" \
+  -var="enable_internet_gateway=true" \
+  -auto-approve
 ```
 
 **成功すると、スポットインスタンスの EC2 上に Windows Server 2019 が作成され、AD ドメイン (`example.local`) が設定されます。**
