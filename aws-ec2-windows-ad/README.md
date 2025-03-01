@@ -72,8 +72,8 @@ echo $(curl -s https://checkip.amazonaws.com)/32
 
 ```bash
 terraform plan \
-  -var="spot_price=0.0366" \
-  -var="availability_zone=ap-northeast-1c" \
+  -var="spot_price=0.035300" \
+  -var="availability_zone=ap-northeast-1d" \
   -var="my_ip=147.192.26.108/32" \
   -var="enable_internet_gateway=true"
 ```
@@ -90,8 +90,8 @@ terraform apply -auto-approve
 
 ```bash
 terraform apply \
-  -var="spot_price=0.0366" \
-  -var="availability_zone=ap-northeast-1c" \
+  -var="spot_price=0.035300" \
+  -var="availability_zone=ap-northeast-1d" \
   -var="my_ip=147.192.26.108/32" \
   -var="enable_internet_gateway=true" \
   -auto-approve
@@ -101,7 +101,12 @@ terraform apply \
 
 ### 4. Windows Server への接続
 
-Terraform の出力にある `windows_ad_public_ip` を使用し、RDP で接続します。
+Terraform の出力にある `windows_ad_public_ip` を使用し、リモートデスクトップで接続します。
+IDは Administrator で、パスワードは、以下AWS CLIで取得できます。
+
+```bash
+aws ec2 get-password-data --instance-id <インスタンスID> --priv-launch-key windows_ad_key.pem
+```
 
 ### 5. ローカル PC をドメインに参加
 
