@@ -1,24 +1,25 @@
-# PowerShell スクリプトのエラーハンドリングを有効化
+<powershell>
+# Enable error handling
 $ErrorActionPreference = "Stop"
 Start-Transcript -Path C:\Windows\Temp\userdata.log
 
 try {
-    if (${install_adds}) {
-        Write-Host "Active Directory Domain Services のインストールを開始します..."
+    if ("${install_adds}" -eq "true") {
+        Write-Host "Starting Active Directory Domain Services installation..."
         
-        # Active Directory のインストール
+        # Install AD DS role
         Install-WindowsFeature -Name AD-Domain-Services -IncludeManagementTools
         Install-WindowsFeature -Name DNS -IncludeManagementTools
 
-        # AD ドメインの設定
+        # Configure AD domain
         $domainName = "${domain_name}"
         $NetBIOSName = "${domain_netbios_name}"
 
-        # 管理者パスワード
+        # Set admin password
         $AdminPassword = ConvertTo-SecureString "${domain_admin_password}" -AsPlainText -Force
         $AdminCred = New-Object System.Management.Automation.PSCredential ("Administrator", $AdminPassword)
 
-        # ドメインコントローラー昇格
+        # Promote to Domain Controller
         Install-ADDSForest `
             -DomainName $domainName `
             -DomainNetbiosName $NetBIOSName `
@@ -27,22 +28,25 @@ try {
             -Force `
             -NoRebootOnCompletion
 
-        Write-Host "Active Directory Domain Services のインストールが完了しました。"
+        Write-Host "Active Directory Domain Services installation completed."
+    } else {
+        Write-Host "Skipping AD DS installation as install_adds is not true"
     }
 
-    # RDP を有効化
+    # Enable RDP
     Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -Name "fDenyTSConnections" -Value 0
 
-    # Windows ファイアウォールで RDP を許可
+    # Allow RDP through Windows Firewall
     Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
 
-    Write-Host "セットアップが完了しました。システムを再起動します。"
+    Write-Host "Setup completed. System will restart."
 } catch {
-    Write-Host "エラーが発生しました: $_"
+    Write-Host "Error occurred: $_"
     throw
 } finally {
     Stop-Transcript
 }
 
-# システムの再起動
+# Restart system
 Restart-Computer -Force
+</powershell>
