@@ -31,3 +31,28 @@ variable "enable_internet_gateway" {
   description = "インターネットゲートウェイを有効にするか"
   default     = true
 }
+
+variable "domain_name" {
+  description = "Active Directory ドメイン名"
+  type        = string
+  default     = "example.local"
+}
+
+variable "domain_netbios_name" {
+  description = "Active Directory NetBIOS名"
+  type        = string
+  default     = "EXAMPLE"
+}
+
+variable "domain_admin_password" {
+  description = "Active Directory 管理者パスワード"
+  type        = string
+  sensitive   = true
+  default     = "administrator_password1"
+}
+
+variable "install_adds" {
+  description = "Active Directory Domain Servicesをインストールするかどうか"
+  type        = bool
+  default     = true
+}

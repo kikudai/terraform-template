@@ -23,9 +23,15 @@ resource "aws_spot_instance_request" "windows_ad" {
   spot_price             = var.spot_price
   wait_for_fulfillment   = true
 
-  user_data = file("${path.module}/userdata.ps1")
+  user_data = templatefile("${path.module}/userdata.ps1", {
+    install_adds         = var.install_adds
+    domain_name         = var.domain_name
+    domain_netbios_name = var.domain_netbios_name
+    domain_admin_password = var.domain_admin_password
+  })
 
   tags = {
     Name = "WindowsADServer"
   }
 }
+

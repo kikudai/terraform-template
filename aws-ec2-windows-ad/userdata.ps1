@@ -1,25 +1,48 @@
-# Active Directory のインストール
-Install-WindowsFeature -Name AD-Domain-Services -IncludeManagementTools
-Install-WindowsFeature -Name DNS -IncludeManagementTools
+# PowerShell スクリプトのエラーハンドリングを有効化
+$ErrorActionPreference = "Stop"
+Start-Transcript -Path C:\Windows\Temp\userdata.log
 
-# AD ドメインの設定
-$domainName = "example.local"
-$NetBIOSName = "EXAMPLE"
+try {
+    if (${install_adds}) {
+        Write-Host "Active Directory Domain Services のインストールを開始します..."
+        
+        # Active Directory のインストール
+        Install-WindowsFeature -Name AD-Domain-Services -IncludeManagementTools
+        Install-WindowsFeature -Name DNS -IncludeManagementTools
 
-# 管理者パスワード
-$AdminPassword = ConvertTo-SecureString "YourSecurePassword!" -AsPlainText -Force
-$AdminCred = New-Object System.Management.Automation.PSCredential ("Administrator", $AdminPassword)
+        # AD ドメインの設定
+        $domainName = "${domain_name}"
+        $NetBIOSName = "${domain_netbios_name}"
 
-# ドメインコントローラー昇格
-Install-ADDSForest -DomainName $domainName -DomainNetbiosName $NetBIOSName -SafeModeAdministratorPassword $AdminPassword -InstallDns -Confirm:$false -Force
+        # 管理者パスワード
+        $AdminPassword = ConvertTo-SecureString "${domain_admin_password}" -AsPlainText -Force
+        $AdminCred = New-Object System.Management.Automation.PSCredential ("Administrator", $AdminPassword)
 
-# 🔹 RDP を有効化
-Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -Name "fDenyTSConnections" -Value 0
+        # ドメインコントローラー昇格
+        Install-ADDSForest `
+            -DomainName $domainName `
+            -DomainNetbiosName $NetBIOSName `
+            -SafeModeAdministratorPassword $AdminPassword `
+            -InstallDns `
+            -Force `
+            -NoRebootOnCompletion
 
-# 🔹 Windows ファイアウォールで RDP を許可
-Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
+        Write-Host "Active Directory Domain Services のインストールが完了しました。"
+    }
 
-# 🔹 ネットワークレベル認証 (NLA) を無効化 (必要に応じて)
-# Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -Name "UserAuthentication" -Value 0
+    # RDP を有効化
+    Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -Name "fDenyTSConnections" -Value 0
 
-Restart-Computer
+    # Windows ファイアウォールで RDP を許可
+    Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
+
+    Write-Host "セットアップが完了しました。システムを再起動します。"
+} catch {
+    Write-Host "エラーが発生しました: $_"
+    throw
+} finally {
+    Stop-Transcript
+}
+
+# システムの再起動
+Restart-Computer -Force
