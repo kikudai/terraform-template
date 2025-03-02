@@ -37,3 +37,22 @@ override.tf.json
 terraform.rc
 
 *.pem
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+.terraform.lock.hcl
+
+# VPN Certificates
+vpn-certs/
+*.key
+*.crt
+*.csr
+*.ovpn
+*.ext
+*.srl
+
+# Other
+.DS_Store
+*.log

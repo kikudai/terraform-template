@@ -72,15 +72,15 @@ echo $(curl -s https://checkip.amazonaws.com)/32
 
 ```bash
 terraform plan \
-  -var="spot_price=0.036100" \
+  -var="spot_price=0.040200" \
   -var="availability_zone=ap-northeast-1a" \
-  -var="my_ip=147.192.26.108/32" \
+  -var="my_ip=$(curl -s https://checkip.amazonaws.com)/32" \
   -var="enable_internet_gateway=true"
 ```
 
 ### 4. インフラの適用
 
-デフォルトのスポット価格 (`0.0357`) と AZ (`ap-northeast-1d`) を使用:
+デフォルトのスポット価格 (`0.036200`) と AZ (`ap-northeast-1a`) を使用:
 
 ```bash
 terraform apply -auto-approve
@@ -90,9 +90,9 @@ terraform apply -auto-approve
 
 ```bash
 terraform apply \
-  -var="spot_price=0.036100" \
+  -var="spot_price=0.040200" \
   -var="availability_zone=ap-northeast-1a" \
-  -var="my_ip=147.192.26.108/32" \
+  -var="my_ip=$(curl -s https://checkip.amazonaws.com)/32" \
   -var="enable_internet_gateway=true" \
   -auto-approve
 ```
