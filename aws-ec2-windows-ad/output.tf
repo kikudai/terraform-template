@@ -12,6 +12,7 @@ output "vpn_endpoint_dns" {
 
 output "instance_id" {
   value = aws_instance.windows_ad.id
+  description = "The ID of the EC2 instance"
 }
 
 output "get_windows_password_command" {
