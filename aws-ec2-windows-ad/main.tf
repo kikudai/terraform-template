@@ -3,25 +3,44 @@ provider "aws" {
 }
 
 resource "aws_vpc" "main" {
-  cidr_block = "10.0.0.0/16"
+  cidr_block           = "172.16.0.0/16"
+  enable_dns_hostnames = true
+  enable_dns_support   = true
+
+  tags = {
+    Name = "windows-ad-vpc"
+  }
 }
 
-resource "aws_subnet" "public" {
+resource "aws_subnet" "public_1" {
   vpc_id                  = aws_vpc.main.id
-  cidr_block              = "10.0.1.0/24"
+  cidr_block              = "172.16.1.0/24"
   map_public_ip_on_launch = true
-  availability_zone       = var.availability_zone
+  availability_zone       = "ap-northeast-1a"
+
+  tags = {
+    Name = "windows-ad-subnet-1"
+  }
 }
 
-resource "aws_spot_instance_request" "windows_ad" {
+resource "aws_subnet" "public_2" {
+  vpc_id                  = aws_vpc.main.id
+  cidr_block              = "172.16.2.0/24"
+  map_public_ip_on_launch = true
+  availability_zone       = "ap-northeast-1c"
+
+  tags = {
+    Name = "windows-ad-subnet-2"
+  }
+}
+
+resource "aws_instance" "windows_ad" {
   ami                    = var.windows_2019_ami
-  instance_type          = "t3.medium"
-  subnet_id              = aws_subnet.public.id
+  instance_type          = "t3.small"
+  subnet_id              = aws_subnet.public_1.id
   vpc_security_group_ids = [aws_security_group.windows_sg.id]
   iam_instance_profile   = aws_iam_instance_profile.ec2_profile.name
-  key_name               = aws_key_pair.generated_key.key_name
-  spot_price             = var.spot_price
-  wait_for_fulfillment   = true
+  key_name              = aws_key_pair.generated_key.key_name
 
   user_data_base64 = base64encode(templatefile("${path.module}/userdata.ps1", {
     install_adds         = tostring(var.install_adds)

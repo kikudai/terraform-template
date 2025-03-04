@@ -27,11 +27,6 @@ variable "my_ip" {
   default     = "0.0.0.0/0" # デフォルトは全許可だが、適用時に変更
 }
 
-variable "enable_internet_gateway" {
-  description = "インターネットゲートウェイを有効にするか"
-  default     = true
-}
-
 variable "domain_name" {
   description = "Active Directory ドメイン名"
   type        = string

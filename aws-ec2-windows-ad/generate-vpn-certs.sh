@@ -5,7 +5,7 @@ mkdir -p vpn-certs
 cd vpn-certs
 
 # 設定
-DOMAIN="vpn.mycompany.local"
+DOMAIN="kikudai.work"
 
 # CA証明書の設定ファイル
 cat > ca.ext << EOF

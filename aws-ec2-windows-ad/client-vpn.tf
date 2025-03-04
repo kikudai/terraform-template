@@ -11,7 +11,7 @@ resource "aws_acm_certificate" "vpn_client" {
 resource "aws_ec2_client_vpn_endpoint" "vpn" {
   description            = "Windows AD VPN endpoint"
   server_certificate_arn = aws_acm_certificate.vpn_server.arn
-  client_cidr_block     = "172.16.0.0/22"
+  client_cidr_block     = "172.17.0.0/22"
   split_tunnel          = true
   vpc_id                = aws_vpc.main.id
 
@@ -31,7 +31,12 @@ resource "aws_ec2_client_vpn_endpoint" "vpn" {
 
 resource "aws_ec2_client_vpn_network_association" "vpn_subnet" {
   client_vpn_endpoint_id = aws_ec2_client_vpn_endpoint.vpn.id
-  subnet_id             = aws_subnet.public.id
+  subnet_id             = aws_subnet.public_1.id
+}
+
+resource "aws_ec2_client_vpn_network_association" "vpn_subnet_2" {
+  client_vpn_endpoint_id = aws_ec2_client_vpn_endpoint.vpn.id
+  subnet_id             = aws_subnet.public_2.id
 }
 
 resource "aws_ec2_client_vpn_authorization_rule" "vpn_auth_rule" {

@@ -77,6 +77,9 @@ try {
     # Enable CredSSP
     Enable-WSManCredSSP -Role Server -Force
 
+    # Disable Network Level Authentication (NLA)
+    (Get-WmiObject -class "Win32_TSGeneralSetting" -Namespace root\cimv2\terminalservices -Filter "TerminalName='RDP-tcp'").SetUserAuthenticationRequired(0)
+
     if ("${install_adds}" -eq "true") {
         Write-Host "Starting Active Directory Domain Services installation..."
         
