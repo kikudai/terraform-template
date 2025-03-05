@@ -1,11 +1,27 @@
 resource "aws_acm_certificate" "vpn_server" {
-  private_key      = file("${path.module}/vpn-certs/server.key")
-  certificate_body = file("${path.module}/vpn-certs/server.crt")
+  private_key       = file("${path.module}/vpn-certs/server.key")
+  certificate_body  = file("${path.module}/vpn-certs/server.crt")
+  certificate_chain = file("${path.module}/vpn-certs/ca.crt")
 }
 
 resource "aws_acm_certificate" "vpn_client" {
-  private_key      = file("${path.module}/vpn-certs/client.key")
-  certificate_body = file("${path.module}/vpn-certs/client.crt")
+  private_key       = file("${path.module}/vpn-certs/client.key")
+  certificate_body  = file("${path.module}/vpn-certs/client.crt")
+  certificate_chain = file("${path.module}/vpn-certs/ca.crt")
+}
+
+resource "aws_cloudwatch_log_group" "vpn_log" {
+  name              = "/aws/vpn/windows-ad-vpn"
+  retention_in_days = 30
+
+  tags = {
+    Name = "windows-ad-vpn-logs"
+  }
+}
+
+resource "aws_cloudwatch_log_stream" "vpn_stream" {
+  name           = "vpn-connection-logs"
+  log_group_name = aws_cloudwatch_log_group.vpn_log.name
 }
 
 resource "aws_ec2_client_vpn_endpoint" "vpn" {
@@ -15,6 +31,9 @@ resource "aws_ec2_client_vpn_endpoint" "vpn" {
   split_tunnel          = true
   vpc_id                = aws_vpc.main.id
   security_group_ids    = [aws_security_group.vpn_sg.id]
+  transport_protocol    = "tcp"
+  vpn_port             = 443
+  session_timeout_hours = 8
 
   authentication_options {
     type                       = "certificate-authentication"
@@ -22,9 +41,13 @@ resource "aws_ec2_client_vpn_endpoint" "vpn" {
   }
 
   connection_log_options {
-    enabled = false
+    enabled               = true
+    cloudwatch_log_group  = aws_cloudwatch_log_group.vpn_log.name
+    cloudwatch_log_stream = aws_cloudwatch_log_stream.vpn_stream.name
   }
 
+  dns_servers = [aws_instance.windows_ad.private_ip]
+  
   tags = {
     Name = "windows-ad-vpn"
   }

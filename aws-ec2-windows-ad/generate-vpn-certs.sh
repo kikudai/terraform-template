@@ -1,92 +1,58 @@
 #!/bin/bash
 
-# 必要なディレクトリを作成
+# easy-rsaのバージョン
+EASY_RSA_VERSION="3.2.2"
+
+# ドメイン設定
+DOMAIN="kikudai.work"
+
+# 作業ディレクトリの作成
+rm -rf vpn-certs
 mkdir -p vpn-certs
 cd vpn-certs
 
-# 設定
-DOMAIN="kikudai.work"
+# easy-rsaのダウンロードと展開
+curl -L https://github.com/OpenVPN/easy-rsa/releases/download/v${EASY_RSA_VERSION}/EasyRSA-${EASY_RSA_VERSION}.tgz | tar xz
+cd EasyRSA-${EASY_RSA_VERSION}
 
-# CA証明書の設定ファイル
-cat > ca.ext << EOF
-basicConstraints = critical,CA:TRUE
-keyUsage = critical,digitalSignature,keyEncipherment,keyCertSign,cRLSign,dataEncipherment
-extendedKeyUsage = serverAuth,clientAuth
-subjectKeyIdentifier = hash
-authorityKeyIdentifier = keyid:always,issuer
+# varsファイルの設定
+# 証明書の有効期間を3650日に設定
+cat > vars << EOF
+set_var EASYRSA_CERT_EXPIRE    3650
 EOF
+
+# PKIの初期化
+./easyrsa init-pki
 
 # CA証明書の生成
-openssl req -x509 -new -nodes -days 3650 -newkey rsa:2048 \
-    -keyout ca.key -out ca.crt \
-    -subj "/CN=${DOMAIN}/O=Windows AD VPN CA" \
-    -config <(cat /etc/ssl/openssl.cnf \
-        <(printf "\n[v3_ca]\nsubjectKeyIdentifier=hash\nauthorityKeyIdentifier=keyid:always,issuer\nbasicConstraints=critical,CA:TRUE\nkeyUsage=critical,digitalSignature,keyEncipherment,keyCertSign,cRLSign,dataEncipherment\nextendedKeyUsage=serverAuth,clientAuth"))
+echo "CA証明書の生成中..."
+./easyrsa --batch build-ca nopass
 
 # サーバー証明書の生成
-openssl req -new -newkey rsa:2048 -nodes \
-    -keyout server.key -out server.csr \
-    -subj "/CN=${DOMAIN}/O=Windows AD VPN Server"
-
-# サーバー証明書の設定ファイル
-cat > server.ext << EOF
-basicConstraints = critical,CA:FALSE
-keyUsage = critical,digitalSignature,keyEncipherment,dataEncipherment
-extendedKeyUsage = serverAuth
-subjectKeyIdentifier = hash
-authorityKeyIdentifier = keyid,issuer:always
-subjectAltName = DNS:${DOMAIN}
-EOF
-
-# サーバー証明書の署名
-openssl x509 -req -days 3650 -in server.csr \
-    -CA ca.crt -CAkey ca.key -CAcreateserial \
-    -out server.crt -extfile server.ext
+echo "サーバー証明書の生成中..."
+./easyrsa --batch build-server-full ${DOMAIN} nopass
 
 # クライアント証明書の生成
-openssl req -new -newkey rsa:2048 -nodes \
-    -keyout client.key -out client.csr \
-    -subj "/CN=client.${DOMAIN}/O=Windows AD VPN Client"
+echo "クライアント証明書の生成中..."
+./easyrsa --batch build-client-full client nopass
 
-# クライアント証明書の設定ファイル
-cat > client.ext << EOF
-basicConstraints = critical,CA:FALSE
-keyUsage = critical,digitalSignature,keyEncipherment,dataEncipherment
-extendedKeyUsage = clientAuth
-subjectKeyIdentifier = hash
-authorityKeyIdentifier = keyid,issuer:always
-EOF
+# 証明書のコピー
+cp pki/ca.crt ../ca.crt
+cp pki/private/ca.key ../ca.key
+cp pki/issued/${DOMAIN}.crt ../server.crt
+cp pki/private/${DOMAIN}.key ../server.key
+cp pki/issued/client.crt ../client.crt
+cp pki/private/client.key ../client.key
 
-# クライアント証明書の署名
-openssl x509 -req -days 3650 -in client.csr \
-    -CA ca.crt -CAkey ca.key -CAcreateserial \
-    -out client.crt -extfile client.ext
+# クリーンアップ
+cd ..
+rm -rf EasyRSA-${EASY_RSA_VERSION}
 
-# クライアント設定ファイルの生成
-cat > client-config.ovpn << EOF
-client
-dev tun
-proto udp
-remote YOUR_VPN_ENDPOINT_DNS 443
-remote-random-hostname
-resolv-retry infinite
-nobind
-persist-key
-persist-tun
-remote-cert-tls server
-cipher AES-256-GCM
-verb 3
-<ca>
-$(cat ca.crt)
-</ca>
-<cert>
-$(cat client.crt)
-</cert>
-<key>
-$(cat client.key)
-</key>
-EOF
-
-# 権限の設定
-chmod 600 *.key
-chmod 644 *.crt *.csr *.ovpn *.ext 
+echo "証明書の生成が完了しました。"
+echo "生成されたファイル:"
+echo "- ca.crt: CA証明書"
+echo "- ca.key: CA秘密鍵"
+echo "- server.crt: サーバー証明書"
+echo "- server.key: サーバー秘密鍵"
+echo "- client.crt: クライアント証明書"
+echo "- client.key: クライアント秘密鍵"
