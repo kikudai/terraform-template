@@ -6,7 +6,6 @@
 
 - Terraform がインストールされていること (`terraform --version` で確認)
 - AWS CLI がインストールされ、適切な権限のある AWS アカウントに認証されていること (`aws configure` で設定)
-- SSH キーペアを作成済み (`your-key-pair`)
 
 ## 構成
 
@@ -18,12 +17,18 @@
 ├── outputs.tf          # 出力値定義
 ├── security_group.tf   # セキュリティグループ設定
 ├── iam.tf              # IAM ロール設定
-├── network.tf          # ✅ 新規追加: IGW & ルートテーブル設定
+├── network.tf          # 新規追加: IGW & ルートテーブル設定
 ├── userdata.ps1        # Windows Server の初期設定 (AD のセットアップ)
 ├── README.md           # 手順説明
 ```
 
 ## 使用方法
+
+### 0. 証明書生成スクリプトを実行
+```bash
+rm -rf ./vpn-certs
+./generate-vpn-certs.sh
+```
 
 ### 1. Terraform の初期化
 

@@ -13,15 +13,6 @@ resource "aws_security_group" "windows_ad" {
     cidr_blocks = [var.vpn_client_cidr]
   }
 
-  # SSHアクセスもVPN接続からのみ許可
-  ingress {
-    description = "SSH from VPN clients"
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = [var.vpn_client_cidr]
-  }
-
   # Active Directory関連ポート
   ingress {
     description = "Active Directory - DNS"

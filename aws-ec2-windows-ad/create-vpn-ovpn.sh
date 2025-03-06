@@ -2,7 +2,7 @@
 VPN_ENDPOINT_DNS=$(aws ec2 describe-client-vpn-endpoints --query 'ClientVpnEndpoints[0].DnsName' --output text | sed 's/^\*\.//')
 
 # クライアント設定ファイルの生成
-cat > client-config.ovpn << EOF
+cat > client-vpn-config.ovpn << EOF
 client
 dev tun
 proto tcp
