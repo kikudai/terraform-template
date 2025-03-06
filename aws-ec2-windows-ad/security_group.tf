@@ -8,7 +8,7 @@ resource "aws_security_group" "windows_sg" {
     from_port   = 3389  # RDP
     to_port     = 3389
     protocol    = "tcp"
-    cidr_blocks = [var.my_ip]
+    cidr_blocks = ["172.16.0.0/16"]
   }
 
   ingress {

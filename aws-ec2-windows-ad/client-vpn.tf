@@ -1,10 +1,33 @@
+resource "null_resource" "generate_vpn_certs" {
+  triggers = {
+    # 証明書を一度だけ生成するために固定値を使用
+    run_once = "generate_certs"
+  }
+
+  provisioner "local-exec" {
+    # 証明書が存在しない場合のみ生成するように条件を追加
+    command = <<-EOT
+      if [ ! -f "${path.module}/vpn-certs/server.crt" ]; then
+        chmod +x ${path.module}/generate-vpn-certs.sh
+        ${path.module}/generate-vpn-certs.sh
+      fi
+    EOT
+  }
+}
+
 resource "aws_acm_certificate" "vpn_server" {
+  depends_on = [null_resource.generate_vpn_certs]
   private_key       = file("${path.module}/vpn-certs/server.key")
   certificate_body  = file("${path.module}/vpn-certs/server.crt")
   certificate_chain = file("${path.module}/vpn-certs/ca.crt")
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 resource "aws_acm_certificate" "vpn_client" {
+  depends_on = [null_resource.generate_vpn_certs]
   private_key       = file("${path.module}/vpn-certs/client.key")
   certificate_body  = file("${path.module}/vpn-certs/client.crt")
   certificate_chain = file("${path.module}/vpn-certs/ca.crt")
@@ -67,4 +90,20 @@ resource "aws_ec2_client_vpn_authorization_rule" "vpn_auth_rule" {
   client_vpn_endpoint_id = aws_ec2_client_vpn_endpoint.vpn.id
   target_network_cidr    = aws_vpc.main.cidr_block
   authorize_all_groups   = true
+}
+
+resource "null_resource" "create_ovpn" {
+  depends_on = [
+    aws_ec2_client_vpn_endpoint.vpn,
+    aws_ec2_client_vpn_network_association.vpn_subnet,
+    aws_ec2_client_vpn_authorization_rule.vpn_auth_rule
+  ]
+
+  triggers = {
+    always_run = "${timestamp()}"
+  }
+
+  provisioner "local-exec" {
+    command = "chmod +x ${path.module}/create-vpn-ovpn.sh && ${path.module}/create-vpn-ovpn.sh"
+  }
 } 

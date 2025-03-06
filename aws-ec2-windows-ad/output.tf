@@ -2,6 +2,11 @@ output "windows_ad_public_ip" {
   value = aws_instance.windows_ad.public_ip
 }
 
+output "windows_ad_private_ip" {
+  value = aws_instance.windows_ad.private_ip
+  description = "The private IP address of the Windows AD instance"
+}
+
 output "private_key_path" {
   value = "${path.module}/windows_ad_key.pem"
 }
