@@ -77,23 +77,25 @@ terraform plan \
 
 ### 4. インフラの適用
 
-デフォルトのスポット価格 (`0.040200`) と AZ (`ap-northeast-1d`) を使用:
-
-```bash
-terraform apply -auto-approve
-```
-
-特定のスポット価格や AZ を指定して適用:
-
 ```bash
 terraform apply \
   -var="my_ip=$(curl -s https://checkip.amazonaws.com)/32" \
   -auto-approve
 ```
 
-**成功すると、スポットインスタンスの EC2 上に Windows Server 2019 が作成され、AD ドメイン (`example.local`) が設定されます。**
+実行後、以下のリソースが作成されます：
+- Windows Server 2019 EC2インスタンス（Active Directory）
+- Client VPN エンドポイント
+- 必要な証明書（自動生成）
+- OpenVPN設定ファイル
 
-### 4. Windows Server への接続
+### 5. VPN接続の設定
+
+1. Terraform実行完了後、カレントディレクトリに `client-vpn-config.ovpn` が生成されます
+2. この設定ファイルをOpenVPNクライアントにインポートします
+3. VPN接続を開始し、プライベートサブネットにアクセスできることを確認します
+
+### 6. Windows Server への接続
 
 Terraform の出力にある `windows_ad_public_ip` を使用し、リモートデスクトップで接続します。
 IDは Administrator で、パスワードは、以下AWS CLIで取得できます。
@@ -101,17 +103,6 @@ IDは Administrator で、パスワードは、以下AWS CLIで取得できま�
 ```bash
 aws ec2 get-password-data --instance-id <インスタンスID> --priv-launch-key windows_ad_key.pem
 ```
-
-### 5. ローカル PC をドメインに参加
-
-1. **ローカル Windows の DNS を変更**
-
-   - `example.local` の DNS に、Terraform で作成した EC2 の **プライベート IP** を設定。
-
-2. **PowerShell でドメイン参加**
-   ```powershell
-   Add-Computer -DomainName "example.local" -Credential "example\Administrator" -Restart
-   ```
 
 ## クリーンアップ
 
@@ -125,7 +116,8 @@ terraform destroy -auto-approve
 
 - AWS のコストが発生するため、不要な場合は `terraform destroy` で削除してください。
 - `userdata.ps1` の `YourSecurePassword!` は適切なものに変更してください。
-- スポット価格と AZ を変数 (`spot_price`, `availability_zone`) で管理しているため、Terraform 実行時に指定できます。
+- VPN証明書は自動生成されますが、運用環境では適切な証明書管理が必要です。
+- Client VPN エンドポイントには別途料金が発生します。
 
 ## ライセンス
 

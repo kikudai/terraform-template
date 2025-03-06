@@ -17,11 +17,6 @@ variable "availability_zone" {
   default     = "ap-northeast-1a"
 }
 
-variable "spot_price" {
-  description = "スポットインスタンスの最大価格"
-  default     = "0.0357"
-}
-
 variable "my_ip" {
   description = "RDP 接続を許可する IP アドレス (MY IP)"
   default     = "0.0.0.0/0" # デフォルトは全許可だが、適用時に変更

@@ -76,12 +76,21 @@ resource "aws_instance" "windows_ad" {
   iam_instance_profile   = aws_iam_instance_profile.ec2_profile.name
   key_name              = aws_key_pair.generated_key.key_name
 
+  # パブリックIPを割り当てない
+  associate_public_ip_address = false
+
   user_data_base64 = base64encode(templatefile("${path.module}/userdata.ps1", {
     install_adds         = tostring(var.install_adds)
     domain_name         = var.domain_name
     domain_netbios_name = var.domain_netbios_name
     domain_admin_password = var.domain_admin_password
   }))
+
+  metadata_options {
+    http_endpoint = "enabled"
+    http_tokens   = "required"  # IMDSv2を必須に設定
+    http_put_response_hop_limit = 1
+  }
 
   tags = {
     Name = "WindowsADServer"
