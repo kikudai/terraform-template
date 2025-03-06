@@ -121,30 +121,34 @@ aws ec2 get-password-data --instance-id <インスタンスID> --priv-launch-key
 terraform destroy -auto-approve
 ```
 
-## セキュリティグループ
-
-VPN接続時と、VPN接続後の設定についてイメージ化しました。
+## AWS構成図
 
 ```mermaid
-graph TB
-    subgraph VPN接続確立後フェーズ
-        C2[VPNクライアントツール<br>from: var.vpn_client_cidr<br>sg: vpn_clients]
-        AD[Windows ADサーバー<br>sg: windows_ad]
-        C2 -->|RDP: 3389/tcp| AD
-        C2 -->|全ての通信| AD
-        AD -->|DNS: 53/tcp,udp<br>Kerberos: 88/tcp,udp<br>LDAP: 389/tcp<br>LDAPS: 636/tcp| C2
+---
+title: AWS VPN with Active Directory 構成図
+---
+flowchart TB
+    Client[クライアント<br>VPNクライアントツール]
+
+    subgraph AWS[AWS Cloud]
+        subgraph VPC[VPC]
+            subgraph Private[プライベートサブネット]
+                AD[Windows ADサーバー<br>sg: windows_ad]
+            end
+
+            subgraph Public[パブリックサブネット]
+                VPNEndpoint[Client VPNエンドポイント<br>sg: vpn_endpoint]
+            end
+        end
     end
 
-    subgraph VPN接続開始フェーズ
-        C1[VPNクライアントツール<br>from: var.my_ip]
-        V1[VPNエンドポイント<br>sg: vpn_endpoint]
-        C1 -->|443/tcp, 443/udp| V1
-    end
+    Client -->|"1.VPN接続開始<br>443(tcp/udp)<br>from: var.my_ip"| VPNEndpoint
+    Client -->|"2.VPN接続確立後<br>3389(tcp), AD関連通信<br>from: var.vpn_client_cidr"| AD
 
-    style C1 fill:#f9f,stroke:#333
-    style C2 fill:#f9f,stroke:#333
-    style V1 fill:#bbf,stroke:#333
-    style AD fill:#bfb,stroke:#333
+    style AWS fill:#ff9900,stroke:#232f3e
+    style VPC fill:#e8f6fe,stroke:#147eba
+    style Public fill:#d6ffe8,stroke:#1b660f
+    style Private fill:#ffe8e8,stroke:#ba1414
 ```
 
 ## 注意事項
