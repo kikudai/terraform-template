@@ -72,7 +72,9 @@ echo $(curl -s https://checkip.amazonaws.com)/32
 
 ```bash
 terraform plan \
-  -var="my_ip=$(curl -s https://checkip.amazonaws.com)/32"
+  -var="my_ip=$(curl -s https://checkip.amazonaws.com)/32" \
+  -var="domain_name=example.com" \
+  -var="domain_netbios_name=EXAMPLE"
 ```
 
 ### 4. インフラの適用
@@ -80,6 +82,8 @@ terraform plan \
 ```bash
 terraform apply \
   -var="my_ip=$(curl -s https://checkip.amazonaws.com)/32" \
+  -var="domain_name=example.com" \
+  -var="domain_netbios_name=EXAMPLE" \
   -auto-approve
 ```
 

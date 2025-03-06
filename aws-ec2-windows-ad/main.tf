@@ -72,7 +72,7 @@ resource "aws_instance" "windows_ad" {
   ami                    = var.windows_2019_ami
   instance_type          = "t3.small"
   subnet_id              = aws_subnet.public_1.id
-  vpc_security_group_ids = [aws_security_group.windows_sg.id]
+  vpc_security_group_ids = [aws_security_group.windows_ad.id]
   iam_instance_profile   = aws_iam_instance_profile.ec2_profile.name
   key_name              = aws_key_pair.generated_key.key_name
 

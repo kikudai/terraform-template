@@ -25,7 +25,7 @@ variable "my_ip" {
 variable "domain_name" {
   description = "Active Directory ドメイン名"
   type        = string
-  default     = "kikudai.work"
+  default     = "kikudai.local"
 }
 
 variable "domain_netbios_name" {
@@ -44,4 +44,10 @@ variable "install_adds" {
   description = "Active Directory Domain Servicesをインストールするかどうか"
   type        = bool
   default     = true
+}
+
+variable "vpn_client_cidr" {
+  description = "The CIDR block for VPN clients"
+  type        = string
+  default     = "172.16.0.0/22"  # VPNクライアント用のCIDR
 }
