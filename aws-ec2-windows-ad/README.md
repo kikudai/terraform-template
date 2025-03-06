@@ -121,6 +121,32 @@ aws ec2 get-password-data --instance-id <インスタンスID> --priv-launch-key
 terraform destroy -auto-approve
 ```
 
+## セキュリティグループ
+
+VPN接続時と、VPN接続後の設定についてイメージ化しました。
+
+```mermaid
+graph TB
+    subgraph Phase2[2. VPN接続確立後フェーズ]
+        C2[VPNクライアントツール<br>from: var.vpn_client_cidr<br>sg: vpn_clients]
+        AD[Windows ADサーバー<br>sg: windows_ad]
+        C2 -->|RDP: 3389/tcp| AD
+        C2 -->|全ての通信| AD
+        AD -->|DNS: 53/tcp,udp<br>Kerberos: 88/tcp,udp<br>LDAP: 389/tcp<br>LDAPS: 636/tcp| C2
+    end
+
+    subgraph Phase1[1. VPN接続開始フェーズ]
+        C1[VPNクライアントツール<br>from: var.my_ip]
+        V1[VPNエンドポイント<br>sg: vpn_endpoint]
+        C1 -->|443/tcp, 443/udp| V1
+    end
+
+    style C1 fill:#f9f,stroke:#333
+    style C2 fill:#f9f,stroke:#333
+    style V1 fill:#bbf,stroke:#333
+    style AD fill:#bfb,stroke:#333
+```
+
 ## 注意事項
 
 - AWS のコストが発生するため、不要な場合は `terraform destroy` で削除してください。

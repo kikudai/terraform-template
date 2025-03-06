@@ -76,68 +76,36 @@ resource "aws_security_group" "windows_ad" {
   }
 }
 
-# VPN用のセキュリティグループ
-resource "aws_security_group" "vpn_sg" {
-  name        = "VPNSecurityGroup"
-  description = "Security group for VPN endpoint"
-  vpc_id      = aws_vpc.main.id
-
-  ingress {
-    from_port   = 443  # VPN (UDP)
-    to_port     = 443
-    protocol    = "udp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    from_port   = 443  # VPN (TCP)
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = {
-    Name = "vpn-sg"
-  }
-}
-
+# VPNエンドポイント用のセキュリティグループ
 resource "aws_security_group" "vpn_endpoint" {
   name        = "vpn_endpoint"
   description = "Security group for VPN endpoint"
   vpc_id      = aws_vpc.main.id
 
-  # VPNクライアントからの接続用（HTTPS）
+  # VPN接続開始フェーズ: VPNクライアントツールからの初期接続用
   ingress {
-    description = "VPN Access"
+    description = "VPN Initial Connection"
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
-    cidr_blocks = [var.my_ip]  # VPN接続元IPのみ許可
+    cidr_blocks = [var.my_ip]
   }
 
-  # VPNクライアントからVPC内のリソースへのアクセス用
+  ingress {
+    description = "VPN Initial Connection (UDP)"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "udp"
+    cidr_blocks = [var.my_ip]
+  }
+
+  # VPC内部への通信のみ許可
   egress {
     description = "Access to VPC resources"
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
-    cidr_blocks = [aws_vpc.main.cidr_block]  # VPC内部への通信のみ許可
-  }
-
-  # DNS通信用（VPNクライアントのDNS解決に必要）
-  egress {
-    description = "DNS Query"
-    from_port   = 53
-    to_port     = 53
-    protocol    = "udp"
-    cidr_blocks = [aws_vpc.main.cidr_block]  # VPC内のDNSサーバー用
+    cidr_blocks = [aws_vpc.main.cidr_block]
   }
 
   tags = {
@@ -145,15 +113,15 @@ resource "aws_security_group" "vpn_endpoint" {
   }
 }
 
-# VPNクライアント用のセキュリティグループ
+# VPN接続確立後のクライアント用セキュリティグループ
 resource "aws_security_group" "vpn_clients" {
   name        = "vpn_clients"
-  description = "Security group for VPN clients"
+  description = "Security group for established VPN connections"
   vpc_id      = aws_vpc.main.id
 
-  # VPNクライアントからのアクセスを許可
+  # VPN接続確立後フェーズ: VPC内のリソースへのアクセス
   ingress {
-    description = "Access from VPN clients"
+    description = "All traffic from VPN clients"
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
@@ -161,7 +129,7 @@ resource "aws_security_group" "vpn_clients" {
   }
 
   egress {
-    description = "Response to VPN clients"
+    description = "All traffic to VPN clients"
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
