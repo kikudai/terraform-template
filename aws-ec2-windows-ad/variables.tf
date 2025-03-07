@@ -2,9 +2,9 @@ variable "aws_region" {
   default = "ap-northeast-1"
 }
 
-variable "windows_2019_ami" {
-  description = "Windows Server 2019 日本語版の AMI ID"
-  default     = "ami-033b26e504cfde89c" # 最新の日本語版 AMI を取得して設定
+variable "windows_ami" {
+  description = "Windows Server 2016 日本語版の AMI ID"
+  default     = "ami-05664ae0ae93d4f43"
 }
 
 variable "key_name" {

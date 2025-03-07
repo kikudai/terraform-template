@@ -69,7 +69,7 @@ resource "aws_subnet" "public_2" {
 }
 
 resource "aws_instance" "windows_ad" {
-  ami                    = var.windows_2019_ami
+  ami                    = var.windows_ami
   instance_type          = "t3.small"
   subnet_id              = aws_subnet.public_1.id
   vpc_security_group_ids = [aws_security_group.windows_ad.id]

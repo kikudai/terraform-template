@@ -48,7 +48,7 @@ aws ec2 describe-images \
   --region ap-northeast-1
 ```
 
-取得した AMI ID を `variables.tf` の `windows_2019_ami` に設定してください。
+取得した AMI ID を `variables.tf` の `windows_ami` に設定してください。
 
 ### 3. スポットインスタンスの価格確認
 
