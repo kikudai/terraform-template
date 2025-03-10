@@ -90,6 +90,11 @@ resource "aws_ec2_client_vpn_authorization_rule" "vpn_auth_rule" {
   client_vpn_endpoint_id = aws_ec2_client_vpn_endpoint.vpn.id
   target_network_cidr    = aws_vpc.main.cidr_block
   authorize_all_groups   = true
+
+  timeouts {
+    create = "20m"  # タイムアウトを20分に延長
+    delete = "20m"
+  }
 }
 
 resource "null_resource" "create_ovpn" {

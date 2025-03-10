@@ -62,13 +62,99 @@ resource "aws_security_group" "windows_ad" {
     cidr_blocks = [aws_vpc.main.cidr_block]
   }
 
+  # NTP関連の設定を追加
+  ingress {
+    description = "NTP from VPN clients"
+    from_port   = 123
+    to_port     = 123
+    protocol    = "udp"
+    cidr_blocks = [var.vpn_client_cidr]
+  }
+
+  # ICMP（ping）の許可
+  ingress {
+    description = "ICMP from VPN clients"
+    from_port   = -1
+    to_port     = -1
+    protocol    = "icmp"
+    cidr_blocks = [var.vpn_client_cidr]
+  }
+
+  # RPC Endpoint Mapper
+  ingress {
+    description = "RPC Endpoint Mapper"
+    from_port   = 135
+    to_port     = 135
+    protocol    = "tcp"
+    cidr_blocks = [var.vpn_client_cidr]
+  }
+
+  # SMB/CIFS
+  ingress {
+    description = "SMB/CIFS"
+    from_port   = 445
+    to_port     = 445
+    protocol    = "tcp"
+    cidr_blocks = [var.vpn_client_cidr]
+  }
+
+  # Dynamic RPC Ports
+  ingress {
+    description = "Dynamic RPC Ports"
+    from_port   = 49152
+    to_port     = 65535
+    protocol    = "tcp"
+    cidr_blocks = [var.vpn_client_cidr]
+  }
+
+  # Active Directory関連ポートをVPNクライアントからも許可
+  ingress {
+    description = "Active Directory - DNS from VPN"
+    from_port   = 53
+    to_port     = 53
+    protocol    = "tcp"
+    cidr_blocks = [var.vpn_client_cidr]
+  }
+
+  ingress {
+    description = "Active Directory - DNS UDP from VPN"
+    from_port   = 53
+    to_port     = 53
+    protocol    = "udp"
+    cidr_blocks = [var.vpn_client_cidr]
+  }
+
+  ingress {
+    description = "Active Directory - LDAP from VPN"
+    from_port   = 389
+    to_port     = 389
+    protocol    = "tcp"
+    cidr_blocks = [var.vpn_client_cidr]
+  }
+
+  ingress {
+    description = "Active Directory - Kerberos from VPN"
+    from_port   = 88
+    to_port     = 88
+    protocol    = "tcp"
+    cidr_blocks = [var.vpn_client_cidr]
+  }
+
+  ingress {
+    description = "Active Directory - Kerberos UDP from VPN"
+    from_port   = 88
+    to_port     = 88
+    protocol    = "udp"
+    cidr_blocks = [var.vpn_client_cidr]
+  }
+
   # アウトバウンドはVPC内部の通信のみ許可
   egress {
-    description = "Internal VPC Communication only"
+    description = "Allow all outbound traffic"
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
-    cidr_blocks = [aws_vpc.main.cidr_block]
+    cidr_blocks = [aws_vpc.main.cidr_block, var.vpn_client_cidr]
   }
 
   tags = {
