@@ -4,7 +4,7 @@
 EASY_RSA_VERSION="3.2.2"
 
 # ドメイン設定
-DOMAIN="kikudai.work"
+DOMAIN="kikudai.local"
 
 # 作業ディレクトリの作成
 rm -rf vpn-certs

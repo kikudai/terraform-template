@@ -113,42 +113,29 @@ try {
         Install-WindowsFeature -Name DNS -IncludeManagementTools
 
         # DNS設定の確認と構成
-        Write-Host "Configuring DNS Server..."
+        Write-Host "Configuring DNS Server with KDC integration..."
         try {
-            # DNSサーバーの設定
-            $dnsServer = Get-DnsServer
-            if ($dnsServer) {
-                # 逆引きゾーンの作成
-                $networkId = $CurrentIP.IPAddress -replace "\.\d+$", ""
-                Add-DnsServerPrimaryZone -NetworkID "$networkId.0/24" -ReplicationScope "Forest"
+            # サービスの依存関係を設定
+            $dnsService = Get-WmiObject -Class Win32_Service -Filter "Name='DNS'"
+            $dependencies = $dnsService.DependentServices + @("Kdc", "NTDS")
+            $dnsService.Change($null, $null, $null, $null, $null, $null, $dependencies)
 
-                # フォワーダーの設定
-                Set-DnsServerForwarder -IPAddress "169.254.169.253" -UseRootHint $false
-
-                # DNSサーバーの再起動
-                Restart-Service DNS
-
-                # DNSレコードの登録を確認
-                $zoneName = "${domain_name}"
-                $computerName = $env:COMPUTERNAME
-                $aRecord = Get-DnsServerResourceRecord -ZoneName $zoneName -Name $computerName -RRType A -ErrorAction SilentlyContinue
-                
-                if (-not $aRecord) {
-                    # Aレコードの追加
-                    Add-DnsServerResourceRecordA -Name $computerName -ZoneName $zoneName -IPv4Address $CurrentIP.IPAddress -CreatePtr
-                }
-
-                # SRVレコードの確認
-                $dcSrvRecords = Get-DnsServerResourceRecord -ZoneName $zoneName -RRType SRV -ErrorAction SilentlyContinue
-                if (-not $dcSrvRecords) {
-                    Write-Host "Warning: SRV records may need to be manually verified after domain promotion"
-                }
+            # レジストリ設定の追加
+            $regPath = "HKLM:\SYSTEM\CurrentControlSet\Services\DNS\Parameters"
+            if (!(Test-Path $regPath)) {
+                New-Item -Path $regPath -Force
             }
+            
+            # DNSサーバーがKDCを待機するように設定
+            Set-ItemProperty -Path $regPath -Name "WaitForKdc" -Value 1 -Type DWord
+            
+            # DNSサービスの起動順序を設定
+            $servicePath = "HKLM:\SYSTEM\CurrentControlSet\Services\DNS"
+            Set-ItemProperty -Path $servicePath -Name "DependOnService" -Value @("NTDS", "Kdc", "RpcSs") -Type MultiString
 
-            Write-Host "DNS Server configuration completed."
-        }
-        catch {
-            Write-Host "Error configuring DNS Server: $_"
+            Write-Host "DNS Server KDC integration configured."
+        } catch {
+            Write-Host "Error configuring DNS Server KDC integration: $_"
             Write-Host "Stack Trace: $($_.ScriptStackTrace)"
         }
 
@@ -234,6 +221,13 @@ try {
         $Action = New-ScheduledTaskAction -Execute 'Powershell.exe' -Argument @'
 -NoProfile -WindowStyle Hidden -Command "
     Start-Transcript -Path C:\Windows\Temp\dns-check.log
+    
+    # サービスの再起動順序を確認
+    Stop-Service DNS -Force
+    Start-Service Kdc
+    Start-Service NTDS
+    Start-Service DNS
+    
     # DNSレコードの確認と修正
     $zoneName = '${domain_name}'
     $computerName = $env:COMPUTERNAME
@@ -249,7 +243,7 @@ try {
     Register-DnsClient
     
     # DNS診断の実行
-    dcdiag /test:dns /v
+    dcdiag /test:dns /test:services /test:netlogons /v
     Stop-Transcript
 "
 '@
