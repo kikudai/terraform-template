@@ -233,17 +233,51 @@ try {
     $computerName = $env:COMPUTERNAME
     $ip = (Get-NetIPAddress -AddressFamily IPv4 | Where-Object { $_.InterfaceAlias -notlike '*Loopback*' }).IPAddress
     
-    # Aレコードの確認と更新
-    $aRecord = Get-DnsServerResourceRecord -ZoneName $zoneName -Name $computerName -RRType A -ErrorAction SilentlyContinue
-    if (-not $aRecord) {
-        Add-DnsServerResourceRecordA -Name $computerName -ZoneName $zoneName -IPv4Address $ip -CreatePtr
+    # 既存のレコードを確認
+    Write-Host "Verifying DNS records..."
+
+    # 必要なSRVレコードの追加（kikudai.localゾーン）
+    $srvRecords = @(
+        @{Name="_ldap._tcp.dc"; Port="389"},
+        @{Name="_kerberos._tcp.dc"; Port="88"}
+    )
+
+    foreach ($record in $srvRecords) {
+        try {
+            Add-DnsServerResourceRecord -ZoneName $zoneName -Name $record.Name -SRV `
+                -DomainName "$computerName.$zoneName" -Priority 0 -Weight 100 `
+                -Port $record.Port -ErrorAction SilentlyContinue
+            Write-Host "Added or verified SRV record: $($record.Name)"
+        } catch {
+            Write-Host "Error adding SRV record $($record.Name): $_"
+        }
     }
+
+    # 逆引きゾーンの作成と設定
+    $ipParts = $ip.Split('.')
+    $reverseZone = "$($ipParts[2]).$($ipParts[1]).$($ipParts[0]).in-addr.arpa"
     
-    # SRVレコードの確認
-    Register-DnsClient
-    
+    try {
+        # 逆引きゾーンが存在しない場合は作成
+        if (-not (Get-DnsServerZone -Name $reverseZone -ErrorAction SilentlyContinue)) {
+            Add-DnsServerPrimaryZone -NetworkID "$($ipParts[0]).$($ipParts[1]).$($ipParts[2]).0/24" -ReplicationScope "Forest"
+            Write-Host "Created reverse lookup zone: $reverseZone"
+        }
+
+        # PTRレコードの追加
+        Add-DnsServerResourceRecordPtr -Name $ipParts[3] -ZoneName $reverseZone `
+            -PtrDomainName "$computerName.$zoneName" -ErrorAction SilentlyContinue
+        Write-Host "Added or verified PTR record for $ip"
+    } catch {
+        Write-Host "Error configuring reverse lookup: $_"
+    }
+
     # DNS診断の実行
     dcdiag /test:dns /test:services /test:netlogons /v
+    
+    # レプリケーションの強制実行
+    repadmin /syncall /APed
+    
     Stop-Transcript
 "
 '@
