@@ -68,15 +68,45 @@ resource "aws_subnet" "public_2" {
   }
 }
 
+# プライベートルートテーブル
+resource "aws_route_table" "private" {
+  vpc_id = aws_vpc.main.id
+
+  route {
+    cidr_block = "0.0.0.0/0"
+    instance_id = aws_instance.nat.id  # NATインスタンスを経由
+  }
+
+  tags = {
+    Name = "windows-ad-private-rt"
+  }
+}
+
+# プライベートサブネットのルートテーブル関連付け
+resource "aws_route_table_association" "private_1" {
+  subnet_id      = aws_subnet.private_1.id
+  route_table_id = aws_route_table.private.id
+}
+
+resource "aws_subnet" "private_1" {
+  vpc_id                  = aws_vpc.main.id
+  cidr_block              = "172.16.3.0/24"
+  map_public_ip_on_launch = false
+  availability_zone       = "ap-northeast-1a"
+
+  tags = {
+    Name = "windows-ad-private-subnet-1"
+  }
+}
+
 resource "aws_instance" "windows_ad" {
   ami                    = var.windows_ami
   instance_type          = "t3.small"
-  subnet_id              = aws_subnet.public_1.id
+  subnet_id              = aws_subnet.private_1.id
   vpc_security_group_ids = [aws_security_group.windows_ad.id]
   iam_instance_profile   = aws_iam_instance_profile.ec2_profile.name
-  key_name              = aws_key_pair.generated_key.key_name
+  key_name               = aws_key_pair.generated_key.key_name
 
-  # パブリックIPを割り当てない
   associate_public_ip_address = false
 
   user_data_base64 = base64encode(templatefile("${path.module}/userdata.ps1", {
