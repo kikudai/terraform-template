@@ -4,18 +4,18 @@ resource "aws_security_group" "windows_ad" {
   description = "Security group for Windows AD server"
   vpc_id      = aws_vpc.main.id
 
-  # RDPアクセスはVPN接続からのみ許可
+  # VPNクライアントからの全てのトラフィックを許可
   ingress {
-    description = "RDP from VPN clients"
-    from_port   = 3389
-    to_port     = 3389
-    protocol    = "tcp"
+    description = "All traffic from VPN clients"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
     cidr_blocks = [var.vpn_client_cidr]
   }
 
-  # Active Directory関連ポート
+  # VPC内部からのActive Directory関連ポート
   ingress {
-    description = "Active Directory - DNS"
+    description = "Active Directory - DNS Name resolution for DC TCP"
     from_port   = 53
     to_port     = 53
     protocol    = "tcp"
@@ -23,26 +23,10 @@ resource "aws_security_group" "windows_ad" {
   }
 
   ingress {
-    description = "Active Directory - DNS UDP"
+    description = "Active Directory - DNS Name resolution for DC UDP"
     from_port   = 53
     to_port     = 53
     protocol    = "udp"
-    cidr_blocks = [aws_vpc.main.cidr_block]
-  }
-
-  ingress {
-    description = "Active Directory - LDAP"
-    from_port   = 389
-    to_port     = 389
-    protocol    = "tcp"
-    cidr_blocks = [aws_vpc.main.cidr_block]
-  }
-
-  ingress {
-    description = "Active Directory - LDAP SSL"
-    from_port   = 636
-    to_port     = 636
-    protocol    = "tcp"
     cidr_blocks = [aws_vpc.main.cidr_block]
   }
 
@@ -62,90 +46,93 @@ resource "aws_security_group" "windows_ad" {
     cidr_blocks = [aws_vpc.main.cidr_block]
   }
 
-  # NTP関連の設定を追加
   ingress {
-    description = "NTP from VPN clients"
-    from_port   = 123
-    to_port     = 123
-    protocol    = "udp"
-    cidr_blocks = [var.vpn_client_cidr]
-  }
-
-  # ICMP（ping）の許可
-  ingress {
-    description = "ICMP from VPN clients"
-    from_port   = -1
-    to_port     = -1
-    protocol    = "icmp"
-    cidr_blocks = [var.vpn_client_cidr]
-  }
-
-  # RPC Endpoint Mapper
-  ingress {
-    description = "RPC Endpoint Mapper"
+    description = "Active Directory - RPC Endpoint Mapper"
     from_port   = 135
     to_port     = 135
     protocol    = "tcp"
-    cidr_blocks = [var.vpn_client_cidr]
-  }
-
-  # SMB/CIFS
-  ingress {
-    description = "SMB/CIFS"
-    from_port   = 445
-    to_port     = 445
-    protocol    = "tcp"
-    cidr_blocks = [var.vpn_client_cidr]
-  }
-
-  # Dynamic RPC Ports
-  ingress {
-    description = "Dynamic RPC Ports"
-    from_port   = 49152
-    to_port     = 65535
-    protocol    = "tcp"
-    cidr_blocks = [var.vpn_client_cidr]
-  }
-
-  # Active Directory関連ポートをVPNクライアントからも許可
-  ingress {
-    description = "Active Directory - DNS from VPN"
-    from_port   = 53
-    to_port     = 53
-    protocol    = "tcp"
-    cidr_blocks = [var.vpn_client_cidr]
+    cidr_blocks = [aws_vpc.main.cidr_block]
   }
 
   ingress {
-    description = "Active Directory - DNS UDP from VPN"
-    from_port   = 53
-    to_port     = 53
+    description = "Active Directory - NetBIOS name resolution"
+    from_port   = 137
+    to_port     = 137
     protocol    = "udp"
-    cidr_blocks = [var.vpn_client_cidr]
+    cidr_blocks = [aws_vpc.main.cidr_block]
   }
 
   ingress {
-    description = "Active Directory - LDAP from VPN"
+    description = "Active Directory - NetBIOS datagram service"
+    from_port   = 138
+    to_port     = 138
+    protocol    = "udp"
+    cidr_blocks = [aws_vpc.main.cidr_block]
+  }
+
+  ingress {
+    description = "Active Directory - NetBIOS session service"
+    from_port   = 139
+    to_port     = 139
+    protocol    = "tcp"
+    cidr_blocks = [aws_vpc.main.cidr_block]
+  }
+
+  ingress {
+    description = "Active Directory - LDAP Connection to directory services"
     from_port   = 389
     to_port     = 389
     protocol    = "tcp"
-    cidr_blocks = [var.vpn_client_cidr]
+    cidr_blocks = [aws_vpc.main.cidr_block]
   }
 
   ingress {
-    description = "Active Directory - Kerberos from VPN"
-    from_port   = 88
-    to_port     = 88
-    protocol    = "tcp"
-    cidr_blocks = [var.vpn_client_cidr]
-  }
-
-  ingress {
-    description = "Active Directory - Kerberos UDP from VPN"
-    from_port   = 88
-    to_port     = 88
+    description = "Active Directory - LDAP Basic communication with DC"
+    from_port   = 389
+    to_port     = 389
     protocol    = "udp"
-    cidr_blocks = [var.vpn_client_cidr]
+    cidr_blocks = [aws_vpc.main.cidr_block]
+  }
+
+  ingress {
+    description = "Active Directory - SMB Communication with the Netlogon service"
+    from_port   = 445
+    to_port     = 445
+    protocol    = "tcp"
+    cidr_blocks = [aws_vpc.main.cidr_block]
+  }
+
+  ingress {
+    description = "Active Directory - LDAP SSL"
+    from_port   = 636
+    to_port     = 636
+    protocol    = "tcp"
+    cidr_blocks = [aws_vpc.main.cidr_block]
+  }
+
+  ingress {
+    description = "Active Directory - GC"
+    from_port   = 3268
+    to_port     = 3268
+    protocol    = "tcp"
+    cidr_blocks = [aws_vpc.main.cidr_block]
+  }
+
+  ingress {
+    description = "Active Directory - GC SSL"
+    from_port   = 3269
+    to_port     = 3269
+    protocol    = "tcp"
+    cidr_blocks = [aws_vpc.main.cidr_block]
+  }
+
+  # 動的RPCポートの追加
+  ingress {
+    description = "Active Directory - Dynamic RPC Ports"
+    from_port   = 49152
+    to_port     = 65535
+    protocol    = "tcp"
+    cidr_blocks = [aws_vpc.main.cidr_block]
   }
 
   # アウトバウンドはVPC内部の通信のみ許可
