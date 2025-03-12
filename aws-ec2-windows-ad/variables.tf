@@ -49,3 +49,9 @@ variable "vpn_client_cidr" {
   type        = string
   default     = "172.16.0.0/22"  # VPNクライアント用のCIDR
 }
+
+variable "nat_ami" {
+  description = "AMI ID for NAT Instance (Amazon Linux 2023 ARM64)"
+  type        = string
+  default     = "ami-0a9e614c3d1eaa27d"
+}
