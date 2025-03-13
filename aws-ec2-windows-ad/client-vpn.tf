@@ -9,7 +9,7 @@ resource "null_resource" "generate_vpn_certs" {
     command = <<-EOT
       if [ ! -f "${path.module}/vpn-certs/server.crt" ]; then
         chmod +x ${path.module}/generate-vpn-certs.sh
-        ${path.module}/generate-vpn-certs.sh
+        ${path.module}/generate-vpn-certs.sh -d var.domain_name
       fi
     EOT
   }

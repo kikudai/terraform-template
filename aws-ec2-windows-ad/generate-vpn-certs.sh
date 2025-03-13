@@ -3,8 +3,28 @@
 # easy-rsaのバージョン
 EASY_RSA_VERSION="3.2.2"
 
-# ドメイン設定
-DOMAIN="kikudai.local"
+# デフォルトドメイン設定
+DEFAULT_DOMAIN="example.local"
+
+# コマンドラインオプションの処理
+while getopts "d:" opt; do
+  case ${opt} in
+    d )
+      DOMAIN=$OPTARG
+      ;;
+    \? )
+      echo "使用方法: $0 [-d domain]"
+      echo "  -d: ドメイン名を指定 (デフォルト: ${DEFAULT_DOMAIN})"
+      exit 1
+      ;;
+  esac
+done
+
+# ドメインが指定されていない場合はデフォルト値を使用
+if [ -z "${DOMAIN}" ]; then
+  DOMAIN="${DEFAULT_DOMAIN}"
+  echo "ドメインが指定されていません。デフォルト値 ${DOMAIN} を使用します。"
+fi
 
 # 作業ディレクトリの作成
 rm -rf vpn-certs
@@ -49,6 +69,7 @@ cd ..
 rm -rf EasyRSA-${EASY_RSA_VERSION}
 
 echo "証明書の生成が完了しました。"
+echo "使用したドメイン: ${DOMAIN}"
 echo "生成されたファイル:"
 echo "- ca.crt: CA証明書"
 echo "- ca.key: CA秘密鍵"

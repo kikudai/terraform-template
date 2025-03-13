@@ -25,11 +25,13 @@ variable "my_ip" {
 variable "domain_name" {
   description = "Active Directory ドメイン名"
   type        = string
+  default     = "example.local"
 }
 
 variable "domain_netbios_name" {
   description = "Active Directory NetBIOS名"
   type        = string
+  default     = "EXAMPLE"
 }
 
 variable "domain_admin_password" {
