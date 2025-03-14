@@ -37,20 +37,19 @@ resource "aws_route_table" "public" {
 }
 
 # ルートテーブルの関連付け
-resource "aws_route_table_association" "public_1" {
-  subnet_id      = aws_subnet.public_1.id
+resource "aws_route_table_association" "public_1a" {
+  subnet_id      = aws_subnet.public_1a.id
   route_table_id = aws_route_table.public.id
 }
 
-resource "aws_route_table_association" "public_2" {
-  subnet_id      = aws_subnet.public_2.id
+resource "aws_route_table_association" "public_1c" {
+  subnet_id      = aws_subnet.public_1c.id
   route_table_id = aws_route_table.public.id
 }
 
-resource "aws_subnet" "public_1" {
+resource "aws_subnet" "public_1a" {
   vpc_id                  = aws_vpc.main.id
-#  cidr_block              = "172.16.1.0/24"
-  cidr_block              = var.subnet_cidrs["public_1"]
+  cidr_block              = var.subnet_cidrs["public_1a"]
   map_public_ip_on_launch = true
   availability_zone       = "ap-northeast-1a"
 
@@ -59,10 +58,9 @@ resource "aws_subnet" "public_1" {
   }
 }
 
-resource "aws_subnet" "public_2" {
+resource "aws_subnet" "public_1c" {
   vpc_id                  = aws_vpc.main.id
-#  cidr_block              = "172.16.2.0/24"
-  cidr_block              = var.subnet_cidrs["public_2"]
+  cidr_block              = var.subnet_cidrs["public_1c"]
   map_public_ip_on_launch = true
   availability_zone       = "ap-northeast-1c"
 
@@ -86,15 +84,14 @@ resource "aws_route_table" "private" {
 }
 
 # プライベートサブネットのルートテーブル関連付け
-resource "aws_route_table_association" "private_1" {
-  subnet_id      = aws_subnet.private_1.id
+resource "aws_route_table_association" "private_1a" {
+  subnet_id      = aws_subnet.private_1a.id
   route_table_id = aws_route_table.private.id
 }
 
-resource "aws_subnet" "private_1" {
+resource "aws_subnet" "private_1a" {
   vpc_id                  = aws_vpc.main.id
-#  cidr_block              = "172.16.3.0/24"
-  cidr_block              = var.subnet_cidrs["private_1"]
+  cidr_block              = var.subnet_cidrs["private_1a"]
   map_public_ip_on_launch = false
   availability_zone       = "ap-northeast-1a"
 
@@ -106,7 +103,7 @@ resource "aws_subnet" "private_1" {
 resource "aws_instance" "windows_ad" {
   ami                    = var.windows_ami
   instance_type          = "t3.small"
-  subnet_id              = aws_subnet.private_1.id
+  subnet_id              = aws_subnet.private_1a.id
   vpc_security_group_ids = [aws_security_group.windows_ad.id]
   iam_instance_profile   = aws_iam_instance_profile.ec2_profile.name
   key_name               = aws_key_pair.generated_key.key_name

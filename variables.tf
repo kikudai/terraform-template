@@ -46,13 +46,6 @@ variable "install_adds" {
   default     = true
 }
 
-variable "vpn_client_cidr" {
-  description = "The CIDR block for VPN clients"
-  type        = string
-#  default     = "172.16.0.0/22"  # VPNクライアント用のCIDR
-  default     = "10.16.0.0/22"  # VPNクライアント用のCIDR
-}
-
 variable "nat_ami" {
   description = "AMI ID for NAT Instance (Amazon Linux 2023 ARM64)"
   type        = string
@@ -72,7 +65,6 @@ variable "subnet_cidrs" {
     public_1a  = "10.0.1.0/24"
     public_1c  = "10.0.2.0/24"
     private_1a = "10.0.10.0/24"
-    private_1c = "10.0.11.0/24"
   }
 }
 

@@ -2,7 +2,7 @@
 resource "aws_instance" "nat" {
   ami                    = var.nat_ami
   instance_type          = "t4g.nano"
-  subnet_id              = aws_subnet.public_1.id
+  subnet_id              = aws_subnet.public_1a.id
   vpc_security_group_ids = [aws_security_group.nat.id]
   source_dest_check      = false  # NATインスタンスには必須の設定
   key_name              = aws_key_pair.generated_key.key_name
