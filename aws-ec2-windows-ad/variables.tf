@@ -49,7 +49,8 @@ variable "install_adds" {
 variable "vpn_client_cidr" {
   description = "The CIDR block for VPN clients"
   type        = string
-  default     = "172.16.0.0/22"  # VPNクライアント用のCIDR
+#  default     = "172.16.0.0/22"  # VPNクライアント用のCIDR
+  default     = "10.16.0.0/22"  # VPNクライアント用のCIDR
 }
 
 variable "nat_ami" {
