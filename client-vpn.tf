@@ -69,7 +69,7 @@ resource "aws_ec2_client_vpn_endpoint" "vpn" {
     cloudwatch_log_stream = aws_cloudwatch_log_stream.vpn_stream.name
   }
 
-  dns_servers = [aws_instance.windows_ad.private_ip]
+  dns_servers = [module.compute.windows_ad_private_ip]
   
   tags = {
     Name = "windows-ad-vpn"
