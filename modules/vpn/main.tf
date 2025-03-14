@@ -8,8 +8,8 @@ resource "null_resource" "generate_vpn_certs" {
     # 証明書が存在しない場合のみ生成するように条件を追加
     command = <<-EOT
       if [ ! -f "${path.module}/vpn-certs/server.crt" ]; then
-        chmod +x ${path.module}/generate-vpn-certs.sh
-        ${path.module}/generate-vpn-certs.sh -d var.domain_name
+        chmod +x ${path.module}/scripts/generate-vpn-certs.sh
+        ${path.module}/scripts/generate-vpn-certs.sh -d var.domain_name
       fi
     EOT
   }
@@ -52,8 +52,8 @@ resource "aws_ec2_client_vpn_endpoint" "vpn" {
   server_certificate_arn = aws_acm_certificate.vpn_server.arn
   client_cidr_block     = var.vpn_client_cidr
   split_tunnel          = true
-  vpc_id                = aws_vpc.main.id
-  security_group_ids    = [aws_security_group.vpn_endpoint.id]
+  vpc_id                = var.vpc_id
+  security_group_ids    = [var.security_group_id]
   transport_protocol    = "tcp"
   vpn_port             = 443
   session_timeout_hours = 8
@@ -69,7 +69,7 @@ resource "aws_ec2_client_vpn_endpoint" "vpn" {
     cloudwatch_log_stream = aws_cloudwatch_log_stream.vpn_stream.name
   }
 
-  dns_servers = [module.compute.windows_ad_private_ip]
+  dns_servers = [var.windows_ad_private_ip]
   
   tags = {
     Name = "windows-ad-vpn"
@@ -78,17 +78,17 @@ resource "aws_ec2_client_vpn_endpoint" "vpn" {
 
 resource "aws_ec2_client_vpn_network_association" "vpn_subnet" {
   client_vpn_endpoint_id = aws_ec2_client_vpn_endpoint.vpn.id
-  subnet_id             = aws_subnet.public_1c.id
+  subnet_id             = var.subnet_id_1
 }
 
 resource "aws_ec2_client_vpn_network_association" "vpn_subnet_2" {
   client_vpn_endpoint_id = aws_ec2_client_vpn_endpoint.vpn.id
-  subnet_id             = aws_subnet.public_1c.id
+  subnet_id             = var.subnet_id_2
 }
 
 resource "aws_ec2_client_vpn_authorization_rule" "vpn_auth_rule" {
   client_vpn_endpoint_id = aws_ec2_client_vpn_endpoint.vpn.id
-  target_network_cidr    = aws_vpc.main.cidr_block
+  target_network_cidr    = var.vpc_cidr
   authorize_all_groups   = true
 
   timeouts {
@@ -109,6 +109,6 @@ resource "null_resource" "create_ovpn" {
   }
 
   provisioner "local-exec" {
-    command = "chmod +x ${path.module}/create-vpn-ovpn.sh && ${path.module}/create-vpn-ovpn.sh"
+    command = "chmod +x ${path.module}/scripts/create-vpn-ovpn.sh && ${path.module}/scripts/create-vpn-ovpn.sh"
   }
 } 
