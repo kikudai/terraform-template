@@ -111,12 +111,16 @@ module "compute" {
   windows_ami             = var.windows_ami
   private_subnet_id       = aws_subnet.private_1a.id
   windows_security_group_id = aws_security_group.windows_ad.id
-  iam_instance_profile    = aws_iam_instance_profile.ec2_profile.name
+  iam_instance_profile    = module.iam.instance_profile_name
   
   userdata_template_path  = "${path.module}/userdata.ps1"
   install_adds           = var.install_adds
   domain_name           = var.domain_name
   domain_netbios_name   = var.domain_netbios_name
   domain_admin_password = var.domain_admin_password
+}
+
+module "iam" {
+  source = "./modules/iam"
 }
 
