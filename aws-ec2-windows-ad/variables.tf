@@ -58,3 +58,26 @@ variable "nat_ami" {
   type        = string
   default     = "ami-0a9e614c3d1eaa27d"
 }
+
+variable "vpc_cidr" {
+  description = "VPC のメイン CIDR ブロック"
+  type        = string
+  default     = "10.0.0.0/16"
+}
+
+variable "subnet_cidrs" {
+  description = "サブネットの CIDR ブロックのリスト"
+  type        = map(string)
+  default     = {
+    public_1a  = "10.0.1.0/24"
+    public_1c  = "10.0.2.0/24"
+    private_1a = "10.0.10.0/24"
+    private_1c = "10.0.11.0/24"
+  }
+}
+
+variable "vpn_client_cidr" {
+  description = "VPN クライアント用の CIDR ブロック"
+  type        = string
+  default     = "10.17.0.0/22"
+} 

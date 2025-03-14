@@ -50,8 +50,7 @@ resource "aws_cloudwatch_log_stream" "vpn_stream" {
 resource "aws_ec2_client_vpn_endpoint" "vpn" {
   description            = "Windows AD VPN endpoint"
   server_certificate_arn = aws_acm_certificate.vpn_server.arn
-#  client_cidr_block     = "172.17.0.0/22"
-  client_cidr_block     = "10.17.0.0/22"
+  client_cidr_block     = var.vpn_client_cidr
   split_tunnel          = true
   vpc_id                = aws_vpc.main.id
   security_group_ids    = [aws_security_group.vpn_endpoint.id]
