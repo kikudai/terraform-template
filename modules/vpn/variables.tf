@@ -13,14 +13,14 @@ variable "vpc_id" {
   type        = string
 }
 
-variable "security_group_id" {
+variable "security_group_ids" {
   description = "VPNエンドポイントに適用するセキュリティグループID"
-  type        = string
+  type        = list(string)
 }
 
-variable "windows_ad_private_ip" {
+variable "dns_servers" {
   description = "Windows ADのプライベートIP"
-  type        = string
+  type        = list(string)
 }
 
 variable "subnet_id_1" {
@@ -33,7 +33,7 @@ variable "subnet_id_2" {
   type        = string
 }
 
-variable "vpc_cidr" {
+variable "target_network_cidr" {
   description = "VPCのCIDRブロック"
   type        = string
 } 

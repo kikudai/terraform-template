@@ -22,7 +22,8 @@ output "private_key_path" {
 }
 
 output "vpn_endpoint_dns" {
-  value = aws_ec2_client_vpn_endpoint.vpn.dns_name
+  description = "VPNエンドポイントのDNS名"
+  value = module.vpn.vpn_endpoint_dns
 }
 
 output "instance_id" {

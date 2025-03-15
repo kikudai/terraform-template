@@ -72,4 +72,4 @@ variable "vpn_client_cidr" {
   description = "VPN クライアント用の CIDR ブロック"
   type        = string
   default     = "10.17.0.0/22"
-} 
+}

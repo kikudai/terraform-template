@@ -53,7 +53,7 @@ resource "aws_ec2_client_vpn_endpoint" "vpn" {
   client_cidr_block     = var.vpn_client_cidr
   split_tunnel          = true
   vpc_id                = var.vpc_id
-  security_group_ids    = [var.security_group_id]
+  security_group_ids    = var.security_group_ids
   transport_protocol    = "tcp"
   vpn_port             = 443
   session_timeout_hours = 8
@@ -69,7 +69,7 @@ resource "aws_ec2_client_vpn_endpoint" "vpn" {
     cloudwatch_log_stream = aws_cloudwatch_log_stream.vpn_stream.name
   }
 
-  dns_servers = [var.windows_ad_private_ip]
+  dns_servers = var.dns_servers
   
   tags = {
     Name = "windows-ad-vpn"
@@ -88,7 +88,7 @@ resource "aws_ec2_client_vpn_network_association" "vpn_subnet_2" {
 
 resource "aws_ec2_client_vpn_authorization_rule" "vpn_auth_rule" {
   client_vpn_endpoint_id = aws_ec2_client_vpn_endpoint.vpn.id
-  target_network_cidr    = var.vpc_cidr
+  target_network_cidr    = var.target_network_cidr
   authorize_all_groups   = true
 
   timeouts {

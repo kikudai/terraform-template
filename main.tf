@@ -124,3 +124,24 @@ module "iam" {
   source = "./modules/iam"
 }
 
+module "vpn" {
+  source = "./modules/vpn"
+
+  vpc_id = aws_vpc.main.id
+
+  # セキュリティグループ
+  security_group_ids = [aws_security_group.vpn_endpoint.id]
+
+
+  # Active Directory関連
+  dns_servers = [module.compute.windows_ad_private_ip]
+
+  domain_name          = var.domain_name
+
+  # ネットワーク関連
+  subnet_id_1              = aws_subnet.public_1c.id
+  subnet_id_2            = aws_subnet.public_1c.id
+  target_network_cidr    = aws_vpc.main.cidr_block
+
+  vpn_client_cidr  = var.vpn_client_cidr
+}

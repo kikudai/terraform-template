@@ -26,10 +26,16 @@ if [ -z "${DOMAIN}" ]; then
   echo "ドメインが指定されていません。デフォルト値 ${DOMAIN} を使用します。"
 fi
 
+# スクリプトの場所を取得
+SCRIPT_DIR="$(dirname "$(readlink -f "$0")")/.."
+
+# vpn-certsディレクトリのパスを構築
+CERT_DIR="$SCRIPT_DIR/vpn-certs"
+
 # 作業ディレクトリの作成
-rm -rf vpn-certs
-mkdir -p vpn-certs
-cd vpn-certs
+rm -rf "${CERT_DIR}"
+mkdir -p "${CERT_DIR}"
+cd "${CERT_DIR}"
 
 # easy-rsaのダウンロードと展開
 curl -L https://github.com/OpenVPN/easy-rsa/releases/download/v${EASY_RSA_VERSION}/EasyRSA-${EASY_RSA_VERSION}.tgz | tar xz

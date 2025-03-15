@@ -14,18 +14,24 @@ remote-cert-tls server
 cipher AES-256-GCM
 verb 3
 
+# スクリプトの場所を取得
+SCRIPT_DIR="$(dirname "$(readlink -f "$0")")/.."
+
+# vpn-certsディレクトリのパスを構築
+CERT_DIR="$SCRIPT_DIR/vpn-certs"
+
 # CA証明書（ca.crt）
 <ca>
-$(cat ./vpn-certs/ca.crt)
+$(cat ../vpn-certs/ca.crt)
 </ca>
 
 # クライアント証明書（client.crt）
 <cert>
-$(cat ./vpn-certs/client.crt)
+$(cat ../vpn-certs/client.crt)
 </cert>
 
 # クライアント秘密鍵（client.key）
 <key>
-$(cat ./vpn-certs/client.key)
+$(cat ../vpn-certs/client.key)
 </key>
 EOF
