@@ -14,7 +14,7 @@ variable "nat_security_group_id" {
 }
 
 variable "key_name" {
-  description = "EC2インスタンスのキーペア名"
+  description = "Name of the key pair"
   type        = string
 }
 

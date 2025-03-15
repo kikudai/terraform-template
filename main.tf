@@ -101,12 +101,12 @@ resource "aws_subnet" "private_1a" {
 }
 
 module "compute" {
-  source = "./modules/compute"
+  source   = "./modules/compute"
+  key_name = "your-key-name"  # 任意のキー名を指定
 
   nat_ami                  = var.nat_ami
   public_subnet_id         = aws_subnet.public_1a.id
   nat_security_group_id    = aws_security_group.nat.id
-  key_name                = aws_key_pair.generated_key.key_name
   
   windows_ami             = var.windows_ami
   private_subnet_id       = aws_subnet.private_1a.id
