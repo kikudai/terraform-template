@@ -19,7 +19,7 @@ resource "aws_security_group" "windows_ad" {
     from_port   = 53
     to_port     = 53
     protocol    = "tcp"
-    cidr_blocks = [aws_vpc.main.cidr_block]
+    cidr_blocks = [var.vpc_cidr]
   }
 
   ingress {
@@ -27,7 +27,7 @@ resource "aws_security_group" "windows_ad" {
     from_port   = 53
     to_port     = 53
     protocol    = "udp"
-    cidr_blocks = [aws_vpc.main.cidr_block]
+    cidr_blocks = [var.vpc_cidr]
   }
 
   ingress {
@@ -35,7 +35,7 @@ resource "aws_security_group" "windows_ad" {
     from_port   = 88
     to_port     = 88
     protocol    = "tcp"
-    cidr_blocks = [aws_vpc.main.cidr_block]
+    cidr_blocks = [var.vpc_cidr]
   }
 
   ingress {
@@ -43,7 +43,7 @@ resource "aws_security_group" "windows_ad" {
     from_port   = 88
     to_port     = 88
     protocol    = "udp"
-    cidr_blocks = [aws_vpc.main.cidr_block]
+    cidr_blocks = [var.vpc_cidr]
   }
 
   ingress {
@@ -51,7 +51,7 @@ resource "aws_security_group" "windows_ad" {
     from_port   = 135
     to_port     = 135
     protocol    = "tcp"
-    cidr_blocks = [aws_vpc.main.cidr_block]
+    cidr_blocks = [var.vpc_cidr]
   }
 
   ingress {
@@ -59,7 +59,7 @@ resource "aws_security_group" "windows_ad" {
     from_port   = 137
     to_port     = 137
     protocol    = "udp"
-    cidr_blocks = [aws_vpc.main.cidr_block]
+    cidr_blocks = [var.vpc_cidr]
   }
 
   ingress {
@@ -67,7 +67,7 @@ resource "aws_security_group" "windows_ad" {
     from_port   = 138
     to_port     = 138
     protocol    = "udp"
-    cidr_blocks = [aws_vpc.main.cidr_block]
+    cidr_blocks = [var.vpc_cidr]
   }
 
   ingress {
@@ -75,7 +75,7 @@ resource "aws_security_group" "windows_ad" {
     from_port   = 139
     to_port     = 139
     protocol    = "tcp"
-    cidr_blocks = [aws_vpc.main.cidr_block]
+    cidr_blocks = [var.vpc_cidr]
   }
 
   ingress {
@@ -83,7 +83,7 @@ resource "aws_security_group" "windows_ad" {
     from_port   = 389
     to_port     = 389
     protocol    = "tcp"
-    cidr_blocks = [aws_vpc.main.cidr_block]
+    cidr_blocks = [var.vpc_cidr]
   }
 
   ingress {
@@ -91,7 +91,7 @@ resource "aws_security_group" "windows_ad" {
     from_port   = 389
     to_port     = 389
     protocol    = "udp"
-    cidr_blocks = [aws_vpc.main.cidr_block]
+    cidr_blocks = [var.vpc_cidr]
   }
 
   ingress {
@@ -99,7 +99,7 @@ resource "aws_security_group" "windows_ad" {
     from_port   = 445
     to_port     = 445
     protocol    = "tcp"
-    cidr_blocks = [aws_vpc.main.cidr_block]
+    cidr_blocks = [var.vpc_cidr]
   }
 
   ingress {
@@ -107,7 +107,7 @@ resource "aws_security_group" "windows_ad" {
     from_port   = 636
     to_port     = 636
     protocol    = "tcp"
-    cidr_blocks = [aws_vpc.main.cidr_block]
+    cidr_blocks = [var.vpc_cidr]
   }
 
   ingress {
@@ -115,7 +115,7 @@ resource "aws_security_group" "windows_ad" {
     from_port   = 3268
     to_port     = 3268
     protocol    = "tcp"
-    cidr_blocks = [aws_vpc.main.cidr_block]
+    cidr_blocks = [var.vpc_cidr]
   }
 
   ingress {
@@ -123,7 +123,16 @@ resource "aws_security_group" "windows_ad" {
     from_port   = 3269
     to_port     = 3269
     protocol    = "tcp"
-    cidr_blocks = [aws_vpc.main.cidr_block]
+    cidr_blocks = [var.vpc_cidr]
+  }
+
+  # RDPアクセスはVPN接続からのみ許可
+  ingress {
+    description = "RDP from VPN clients"
+    from_port   = 3389
+    to_port     = 3389
+    protocol    = "tcp"
+    cidr_blocks = [var.subnet_cidrs["private_1a"]]
   }
 
   # 動的RPCポートの追加
@@ -132,7 +141,7 @@ resource "aws_security_group" "windows_ad" {
     from_port   = 49152
     to_port     = 65535
     protocol    = "tcp"
-    cidr_blocks = [aws_vpc.main.cidr_block]
+    cidr_blocks = [var.vpc_cidr]
   }
 
   # アウトバウンドはVPC内部の通信のみ許可
@@ -141,7 +150,7 @@ resource "aws_security_group" "windows_ad" {
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
-    cidr_blocks = [aws_vpc.main.cidr_block, var.vpn_client_cidr]
+    cidr_blocks = [var.vpc_cidr, var.vpn_client_cidr]
   }
 
   tags = {
@@ -178,7 +187,7 @@ resource "aws_security_group" "vpn_endpoint" {
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
-    cidr_blocks = [aws_vpc.main.cidr_block]
+    cidr_blocks = [var.vpc_cidr]
   }
 
   tags = {
@@ -225,7 +234,7 @@ resource "aws_security_group" "nat" {
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
-    cidr_blocks = [aws_vpc.main.cidr_block]
+    cidr_blocks = [var.vpc_cidr]
   }
 
   egress {

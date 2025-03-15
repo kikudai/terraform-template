@@ -3,7 +3,6 @@ provider "aws" {
 }
 
 resource "aws_vpc" "main" {
-#  cidr_block           = "172.16.0.0/16"
   cidr_block           = var.vpc_cidr
   enable_dns_hostnames = true
   enable_dns_support   = true
@@ -139,8 +138,8 @@ module "vpn" {
   domain_name          = var.domain_name
 
   # ネットワーク関連
-  subnet_id_1              = aws_subnet.public_1c.id
-  subnet_id_2            = aws_subnet.public_1c.id
+  subnet_id_1            = aws_subnet.public_1c.id
+  subnet_id_2            = var.subnet_cidrs["private_1a"]
   target_network_cidr    = aws_vpc.main.cidr_block
 
   vpn_client_cidr  = var.vpn_client_cidr
