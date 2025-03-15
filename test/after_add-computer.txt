@@ -1,0 +1,13 @@
+PS C:\Users\kings> Add-Computer -DomainName kikuda.local -Credential (Get-Credential) -Verbose
+
+コマンド パイプライン位置 1 のコマンドレット Get-Credential
+次のパラメーターに値を指定してください:
+Credential
+詳細: 対象 "lg-gram" に対して操作 "ドメイン 'kikuda.local' に参加" を実行しています。
+Add-Computer : コンピューター 'lg-gram' をドメイン 'kiku.local' から切断できませんでした。エラー メッセージは次のとおり
+です: 指定されたネットワーク名は利用できません。。
+発生場所 行:1 文字:1
++ Add-Computer -DomainName kikuda.local -Credential (Get-Credential) -V ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : OperationStopped: (lg-gram:String) [Add-Computer], InvalidOperationException
+    + FullyQualifiedErrorId : FailToUnjoinDomain,Microsoft.PowerShell.Commands.AddComputerCommand
