@@ -2,115 +2,28 @@ provider "aws" {
   region = var.aws_region
 }
 
-resource "aws_vpc" "main" {
-  cidr_block           = var.vpc_cidr
-  enable_dns_hostnames = true
-  enable_dns_support   = true
+module "network" {
+  source = "./modules/network"
 
-  tags = {
-    Name = "windows-ad-vpc"
-  }
-}
-
-# インターネットゲートウェイ
-resource "aws_internet_gateway" "main" {
-  vpc_id = aws_vpc.main.id
-
-  tags = {
-    Name = "windows-ad-igw"
-  }
-}
-
-# パブリックルートテーブル
-resource "aws_route_table" "public" {
-  vpc_id = aws_vpc.main.id
-
-  route {
-    cidr_block = "0.0.0.0/0"
-    gateway_id = aws_internet_gateway.main.id
-  }
-
-  tags = {
-    Name = "windows-ad-public-rt"
-  }
-}
-
-# ルートテーブルの関連付け
-resource "aws_route_table_association" "public_1a" {
-  subnet_id      = aws_subnet.public_1a.id
-  route_table_id = aws_route_table.public.id
-}
-
-resource "aws_route_table_association" "public_1c" {
-  subnet_id      = aws_subnet.public_1c.id
-  route_table_id = aws_route_table.public.id
-}
-
-resource "aws_subnet" "public_1a" {
-  vpc_id                  = aws_vpc.main.id
-  cidr_block              = var.subnet_cidrs["public_1a"]
-  map_public_ip_on_launch = true
-  availability_zone       = "ap-northeast-1a"
-
-  tags = {
-    Name = "windows-ad-subnet-1"
-  }
-}
-
-resource "aws_subnet" "public_1c" {
-  vpc_id                  = aws_vpc.main.id
-  cidr_block              = var.subnet_cidrs["public_1c"]
-  map_public_ip_on_launch = true
-  availability_zone       = "ap-northeast-1c"
-
-  tags = {
-    Name = "windows-ad-subnet-2"
-  }
-}
-
-# プライベートサブネット用のルートテーブル
-resource "aws_route_table" "private" {
-  vpc_id = aws_vpc.main.id
-
-  route {
-    cidr_block           = "0.0.0.0/0"
-    network_interface_id = module.compute.nat_network_interface_id
-  }
-
-  tags = {
-    Name = "windows-ad-private-rt"
-  }
-}
-
-# プライベートサブネットのルートテーブル関連付け
-resource "aws_route_table_association" "private_1a" {
-  subnet_id      = aws_subnet.private_1a.id
-  route_table_id = aws_route_table.private.id
-}
-
-resource "aws_subnet" "private_1a" {
-  vpc_id                  = aws_vpc.main.id
-  cidr_block              = var.subnet_cidrs["private_1a"]
-  map_public_ip_on_launch = false
-  availability_zone       = "ap-northeast-1a"
-
-  tags = {
-    Name = "windows-ad-private-subnet-1"
-  }
+  vpc_cidr                 = var.vpc_cidr
+  subnet_cidrs             = var.subnet_cidrs
+  nat_network_interface_id = module.compute.nat_network_interface_id
+  vpn_client_cidr         = var.vpn_client_cidr
+  my_ip                   = var.my_ip
 }
 
 module "compute" {
-  source   = "./modules/compute"
-  key_name = "your-key-name"  # 任意のキー名を指定
-
-  nat_ami                  = var.nat_ami
-  public_subnet_id         = aws_subnet.public_1a.id
-  nat_security_group_id    = aws_security_group.nat.id
+  source = "./modules/compute"
   
-  windows_ami             = var.windows_ami
-  private_subnet_id       = aws_subnet.private_1a.id
-  windows_security_group_id = aws_security_group.windows_ad.id
-  iam_instance_profile    = module.iam.instance_profile_name
+  key_name                = "your-key-name"
+  nat_ami                 = var.nat_ami
+  public_subnet_id        = module.network.public_subnet_1a_id
+  nat_security_group_id   = module.network.nat_sg_id
+  
+  windows_ami              = var.windows_ami
+  private_subnet_id        = module.network.private_subnet_1a_id
+  windows_security_group_id = module.network.windows_ad_sg_id
+  iam_instance_profile     = module.iam.instance_profile_name
   
   userdata_template_path  = "${path.module}/userdata.ps1"
   install_adds           = var.install_adds
@@ -126,10 +39,10 @@ module "iam" {
 module "vpn" {
   source = "./modules/vpn"
 
-  vpc_id = aws_vpc.main.id
+  vpc_id = module.network.vpc_id
 
   # セキュリティグループ
-  security_group_ids = [aws_security_group.vpn_endpoint.id]
+  security_group_ids = [module.network.vpn_endpoint_sg_id]
 
 
   # Active Directory関連
@@ -138,9 +51,9 @@ module "vpn" {
   domain_name          = var.domain_name
 
   # ネットワーク関連
-  subnet_id_1            = aws_subnet.public_1c.id
-  subnet_id_2            = var.subnet_cidrs["private_1a"]
-  target_network_cidr    = aws_vpc.main.cidr_block
+  subnet_id_1            = module.network.public_subnet_1c_id
+  subnet_id_2            = module.network.private_subnet_1a_id
+  target_network_cidr    = module.network.vpc_cidr
 
   vpn_client_cidr  = var.vpn_client_cidr
 }
