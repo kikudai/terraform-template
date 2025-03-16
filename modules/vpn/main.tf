@@ -78,12 +78,12 @@ resource "aws_ec2_client_vpn_endpoint" "vpn" {
 
 resource "aws_ec2_client_vpn_network_association" "vpn_subnet" {
   client_vpn_endpoint_id = aws_ec2_client_vpn_endpoint.vpn.id
-  subnet_id             = var.subnet_id_1
+  subnet_id             = var.public_subnet_1c
 }
 
 resource "aws_ec2_client_vpn_network_association" "vpn_subnet_2" {
   client_vpn_endpoint_id = aws_ec2_client_vpn_endpoint.vpn.id
-  subnet_id             = var.subnet_id_2
+  subnet_id             = var.private_subnet_1a
 }
 
 resource "aws_ec2_client_vpn_authorization_rule" "vpn_auth_rule" {

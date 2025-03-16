@@ -23,13 +23,13 @@ variable "dns_servers" {
   type        = list(string)
 }
 
-variable "subnet_id_1" {
-  description = "VPN接続用のサブネットID 1"
+variable "public_subnet_1c" {
+  description = "First subnet ID for VPN association"
   type        = string
 }
 
-variable "subnet_id_2" {
-  description = "VPN接続用のサブネットID 2"
+variable "private_subnet_1a" {
+  description = "Second subnet ID for VPN association"
   type        = string
 }
 
