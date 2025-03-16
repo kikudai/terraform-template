@@ -237,6 +237,14 @@ resource "aws_security_group" "windows_ad" {
     from_port   = 3389
     to_port     = 3389
     protocol    = "tcp"
+    cidr_blocks = [var.subnet_cidrs["public_1c"]]
+  }
+
+  ingress {
+    description = "RDP from VPN clients"
+    from_port   = 3389
+    to_port     = 3389
+    protocol    = "tcp"
     cidr_blocks = [var.subnet_cidrs["private_1a"]]
   }
 

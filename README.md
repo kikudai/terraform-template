@@ -1,6 +1,6 @@
 # AWS Windows Server AD 環境構築 (Terraform)
 
-このプロジェクトは、Terraform を使用して AWS 上に Windows Server 2016 をEC2インスタンスで構築し、Active Directory を設定するためのスクリプトを提供します。
+このプロジェクトは、Terraform を使用して AWS 上に Windows Server をEC2インスタンスで構築し、Active Directory を設定するためのスクリプトを提供します。
 
 ## 前提条件
 
