@@ -10,7 +10,6 @@
 ## 構成
 
 ```
-/aws-windows-ad
 # tree --dirsfirst -F
 ./
 ├── environments/
@@ -67,7 +66,8 @@ cd environments/poc
 ### 2. 証明書生成スクリプトを実行
 
 ```bash
-../../scripts/generate-vpn-certs.sh
+# ドメイン名を指定して実行する
+../../modules/vpn/scripts/generate-vpn-certs.sh -d sample.local
 ```
 
 ### 3. Terraform の初期化
@@ -79,7 +79,6 @@ terraform init
 ### 4. 環境変数の設定
 
 terraform.tfvars ファイルを作成し、必要な変数を設定します：
-
 ```hcl
 my_ip                = "自分のIP/32"  # curl -s https://checkip.amazonaws.com で取得可能
 domain_name          = "example.com"
@@ -97,7 +96,7 @@ aws ec2 describe-images \
   --region ap-northeast-1
 ```
 
-取得した AMI ID を `variables.tf` の `windows_ami` に設定してください。
+取得した AMI ID を `terraform.tfvars` の `windows_ami` に設定してください。
 
 ### 6. RDP 接続用に自分の IP を取得
 
