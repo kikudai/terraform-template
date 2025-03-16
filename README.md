@@ -151,7 +151,7 @@ aws ec2 get-password-data --instance-id <インスタンスID> --priv-launch-key
 作成したリソースを削除する場合:
 
 ```sh
-terraform destroy -auto-approve \
+terraform destroy \
   -var-file="terraform.tfvars" \
   -var="my_ip=$(curl -s https://checkip.amazonaws.com)/32"
 ```
