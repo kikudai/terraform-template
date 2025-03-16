@@ -22,23 +22,38 @@
 ├── README.md           # 手順説明
 ```
 
-## 使用方法
+## 使用方法（POC環境）
 
-### 0. 証明書生成スクリプトを実行
-```bash
-rm -rf ./vpn-certs
-./generate-vpn-certs.sh
+### 1. 環境ディレクトリに移動
+
+```sh
+cd environments/poc
 ```
 
-### 1. Terraform の初期化
+### 2. 証明書生成スクリプトを実行
+
+```bash
+../../scripts/generate-vpn-certs.sh
+```
+
+### 3. Terraform の初期化
 
 ```sh
 terraform init
 ```
 
-### 2. Windows Server 2019 日本語版の AMI 確認
+### 4. 環境変数の設定
 
-AWS CLI を使用して、東京リージョン (`ap-northeast-1`) の **最新の Windows Server 2019 日本語版 AMI** を取得できます。
+terraform.tfvars ファイルを作成し、必要な変数を設定します：
+
+```hcl
+my_ip                = "自分のIP/32"  # curl -s https://checkip.amazonaws.com で取得可能
+domain_name          = "example.com"
+domain_netbios_name  = "EXAMPLE"
+windows_ami          = "ami-xxxxxxxx"  # 手順5で取得するAMI ID
+```
+
+### 5. Windows Server 2019 日本語版の AMI 確認
 
 ```sh
 aws ec2 describe-images \
@@ -50,7 +65,7 @@ aws ec2 describe-images \
 
 取得した AMI ID を `variables.tf` の `windows_ami` に設定してください。
 
-### 3. スポットインスタンスの価格確認
+### 6. スポットインスタンスの価格確認
 
 AWS CLI を使用して、東京リージョン (`ap-northeast-1`) の `t3.medium` の最新スポット価格を確認できます。
 
@@ -63,7 +78,7 @@ aws ec2 describe-spot-price-history \
   --query 'SpotPriceHistory[0].SpotPrice'
 ```
 
-### 3. RDP 接続用に自分の IP を取得
+### 7. RDP 接続用に自分の IP を取得
 
 Terraform 実行前に、自分のグローバル IP アドレスを取得し、環境変数として設定します。
 
@@ -73,7 +88,7 @@ echo $(curl -s https://checkip.amazonaws.com)/32
 
 これにより、自分のグローバル IP のみを RDP 接続許可対象にできます。
 
-### 4. Terraform Plan で変更内容を確認
+### 8. Terraform Plan で変更内容を確認
 
 ```bash
 terraform plan \
@@ -82,7 +97,7 @@ terraform plan \
   -var="domain_netbios_name=EXAMPLE"
 ```
 
-### 4. インフラの適用
+### 9. インフラの適用
 
 ```bash
 terraform apply \
@@ -98,13 +113,13 @@ terraform apply \
 - 必要な証明書（自動生成）
 - OpenVPN設定ファイル
 
-### 5. VPN接続の設定
+### 10. VPN接続の設定
 
 1. Terraform実行完了後、カレントディレクトリに `client-vpn-config.ovpn` が生成されます
 2. この設定ファイルをOpenVPNクライアントにインポートします
 3. VPN接続を開始し、プライベートサブネットにアクセスできることを確認します
 
-### 6. Windows Server への接続
+### 11. Windows Server への接続
 
 Terraform の出力にある `windows_ad_public_ip` を使用し、リモートデスクトップで接続します。
 IDは Administrator で、パスワードは、以下AWS CLIで取得できます。

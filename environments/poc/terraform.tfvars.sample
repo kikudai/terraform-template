@@ -1,0 +1,30 @@
+aws_region          = "ap-northeast-1"
+vpc_cidr            = "10.0.0.0/16"
+
+subnet_cidrs = {
+  public_1a         = "10.0.1.0/24"
+  public_1c         = "10.0.2.0/24"
+  private_1a        = "10.0.3.0/24"
+}
+
+vpn_client_cidr     = "172.16.0.0/22"
+
+# curl http://checkip.amazonaws.com/
+my_ip               = "127.0.0.1/32"
+
+# EC2インスタンス用キーペア名
+key_name            = "windows_ad_key"
+
+# AmazonLinux 2023 ami
+nat_ami             = "ami-0a9e614c3d1eaa27d"
+
+# Windows server 2016
+windows_ami         = "ami-05664ae0ae93d4f43"
+
+# Active Directory Domain Services 利用有無
+install_adds        = true
+
+domain_name         = "kiku.local"
+domain_netbios_name = "KIKU"
+
+# domain_admin_password は terraform 実行時入力
