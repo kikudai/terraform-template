@@ -1,6 +1,6 @@
 # AWS Windows Server AD 環境構築 (Terraform)
 
-このプロジェクトは、Terraform を使用して AWS 上に Windows Server 2019 をスポットインスタンスで構築し、Active Directory を設定するためのスクリプトを提供します。
+このプロジェクトは、Terraform を使用して AWS 上に Windows Server 2016 をEC2インスタンスで構築し、Active Directory を設定するためのスクリプトを提供します。
 
 ## 前提条件
 
@@ -11,15 +11,49 @@
 
 ```
 /aws-windows-ad
-├── main.tf             # AWS Provider、VPC、EC2 定義
-├── key.tf              # キーペアの自動生成
-├── variables.tf        # 変数定義 (IGW 有無の切り替え追加)
-├── outputs.tf          # 出力値定義
-├── security_group.tf   # セキュリティグループ設定
-├── iam.tf              # IAM ロール設定
-├── network.tf          # 新規追加: IGW & ルートテーブル設定
-├── userdata.ps1        # Windows Server の初期設定 (AD のセットアップ)
-├── README.md           # 手順説明
+# tree --dirsfirst -F
+./
+├── environments/
+│   └── poc/
+│       ├── client-vpn-config.ovpn
+│       ├── main.tf
+│       ├── outputs.tf
+│       ├── terraform.tfvars
+│       ├── terraform.tfvars.sample
+│       └── variables.tf
+├── modules/
+│   ├── common/
+│   │   └── outputs.tf
+│   ├── compute/
+│   │   ├── main.tf
+│   │   ├── outputs.tf
+│   │   ├── variables.tf
+│   │   └── windows_ad_key.pem
+│   ├── iam/
+│   │   ├── main.tf
+│   │   └── outputs.tf
+│   ├── network/
+│   │   ├── main.tf
+│   │   ├── outputs.tf
+│   │   └── variables.tf
+│   └── vpn/
+│       ├── scripts/
+│       │   ├── create-vpn-ovpn.sh*
+│       │   ├── generate-vpn-certs.sh*
+│       │   └── terraform.tfstate
+│       ├── vpn-certs/
+│       │   ├── ca.crt
+│       │   ├── ca.key
+│       │   ├── client.crt
+│       │   ├── client.key
+│       │   ├── server.crt
+│       │   └── server.key
+│       ├── main.tf
+│       ├── outputs.tf
+│       └── variables.tf
+├── README.md
+├── VPN_README.md
+└── userdata.ps1
 ```
 
 ## 使用方法（POC環境）
@@ -65,20 +99,7 @@ aws ec2 describe-images \
 
 取得した AMI ID を `variables.tf` の `windows_ami` に設定してください。
 
-### 6. スポットインスタンスの価格確認
-
-AWS CLI を使用して、東京リージョン (`ap-northeast-1`) の `t3.medium` の最新スポット価格を確認できます。
-
-```sh
-aws ec2 describe-spot-price-history \
-  --instance-types t3.medium \
-  --product-descriptions "Windows" \
-  --start-time $(date -u +"%Y-%m-%dT%H:%M:%SZ") \
-  --region ap-northeast-1 \
-  --query 'SpotPriceHistory[0].SpotPrice'
-```
-
-### 7. RDP 接続用に自分の IP を取得
+### 6. RDP 接続用に自分の IP を取得
 
 Terraform 実行前に、自分のグローバル IP アドレスを取得し、環境変数として設定します。
 
@@ -88,22 +109,20 @@ echo $(curl -s https://checkip.amazonaws.com)/32
 
 これにより、自分のグローバル IP のみを RDP 接続許可対象にできます。
 
-### 8. Terraform Plan で変更内容を確認
+### 7. Terraform Plan で変更内容を確認
 
 ```bash
 terraform plan \
+  -var-file="terraform.tfvars" \
   -var="my_ip=$(curl -s https://checkip.amazonaws.com)/32" \
-  -var="domain_name=example.com" \
-  -var="domain_netbios_name=EXAMPLE"
 ```
 
-### 9. インフラの適用
+### 8. インフラの適用
 
 ```bash
 terraform apply \
+  -var-file="terraform.tfvars" \
   -var="my_ip=$(curl -s https://checkip.amazonaws.com)/32" \
-  -var="domain_name=example.com" \
-  -var="domain_netbios_name=EXAMPLE" \
   -auto-approve
 ```
 
@@ -113,9 +132,9 @@ terraform apply \
 - 必要な証明書（自動生成）
 - OpenVPN設定ファイル
 
-### 10. VPN接続の設定
+### 9. VPN接続の設定
 
-1. Terraform実行完了後、カレントディレクトリに `client-vpn-config.ovpn` が生成されます
+1. Terraform実行完了後、terraform 実行ディレクトリに `client-vpn-config.ovpn` が生成されます
 2. この設定ファイルをOpenVPNクライアントにインポートします
 3. VPN接続を開始し、プライベートサブネットにアクセスできることを確認します
 
