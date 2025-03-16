@@ -1,3 +1,8 @@
+output "vpc_cidr" {
+  description = "The CIDR block of the VPC"
+  value       = aws_vpc.main.cidr_block
+}
+
 output "vpc_id" {
   value = aws_vpc.main.id
 }
@@ -24,4 +29,8 @@ output "vpn_endpoint_sg_id" {
 
 output "nat_sg_id" {
   value = aws_security_group.nat.id
+}
+
+output "vpn_clients_sg_id" {
+  value = aws_security_group.vpn_clients.id
 } 

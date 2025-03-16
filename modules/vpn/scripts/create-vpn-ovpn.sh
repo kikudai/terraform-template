@@ -16,16 +16,16 @@ verb 3
 
 # CA証明書（ca.crt）
 <ca>
-$(cat ../vpn-certs/ca.crt)
+$(cat ${PWD}/modules/vpn/vpn-certs/ca.crt)
 </ca>
 
 # クライアント証明書（client.crt）
 <cert>
-$(cat ../vpn-certs/client.crt)
+$(cat ${PWD}/modules/vpn/vpn-certs/client.crt)
 </cert>
 
 # クライアント秘密鍵（client.key）
 <key>
-$(cat ../vpn-certs/client.key)
+$(cat ${PWD}/modules/vpn/vpn-certs/client.key)
 </key>
 EOF
