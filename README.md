@@ -114,7 +114,7 @@ echo $(curl -s https://checkip.amazonaws.com)/32
 ```bash
 terraform plan \
   -var-file="terraform.tfvars" \
-  -var="my_ip=$(curl -s https://checkip.amazonaws.com)/32" \
+  -var="my_ip=$(curl -s https://checkip.amazonaws.com)/32"
 ```
 
 ### 8. インフラの適用
@@ -152,7 +152,9 @@ aws ec2 get-password-data --instance-id <インスタンスID> --priv-launch-key
 作成したリソースを削除する場合:
 
 ```sh
-terraform destroy -auto-approve
+terraform destroy -auto-approve \
+  -var-file="terraform.tfvars" \
+  -var="my_ip=$(curl -s https://checkip.amazonaws.com)/32"
 ```
 
 ## AWS構成図
