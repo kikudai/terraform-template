@@ -110,7 +110,16 @@ resource "aws_security_group" "windows_ad" {
     cidr_blocks = [var.vpn_client_cidr]
   }
 
-  # Active Directory関連の詳細なルール
+  # ICMPを追加（pingなど）
+  ingress {
+    description = "ICMP from VPC and VPN clients"
+    from_port   = -1
+    to_port     = -1
+    protocol    = "icmp"
+    cidr_blocks = [var.vpc_cidr]
+  }
+
+  # VPC内部からのActive Directory関連ポート
   ingress {
     description = "Active Directory - DNS Name resolution for DC TCP"
     from_port   = 53
@@ -119,9 +128,110 @@ resource "aws_security_group" "windows_ad" {
     cidr_blocks = [var.vpc_cidr]
   }
 
-  # ... 元の設定の全てのActive Directory関連ポートを同様に追加 ...
+  ingress {
+    description = "Active Directory - DNS Name resolution for DC UDP"
+    from_port   = 53
+    to_port     = 53
+    protocol    = "udp"
+    cidr_blocks = [var.vpc_cidr]
+  }
 
-  # RDPアクセスはVPN接続からのみ許可
+  ingress {
+    description = "Active Directory - Kerberos"
+    from_port   = 88
+    to_port     = 88
+    protocol    = "tcp"
+    cidr_blocks = [var.vpc_cidr]
+  }
+
+  ingress {
+    description = "Active Directory - Kerberos UDP"
+    from_port   = 88
+    to_port     = 88
+    protocol    = "udp"
+    cidr_blocks = [var.vpc_cidr]
+  }
+
+  ingress {
+    description = "Active Directory - RPC Endpoint Mapper"
+    from_port   = 135
+    to_port     = 135
+    protocol    = "tcp"
+    cidr_blocks = [var.vpc_cidr]
+  }
+
+  ingress {
+    description = "Active Directory - NetBIOS name resolution"
+    from_port   = 137
+    to_port     = 137
+    protocol    = "udp"
+    cidr_blocks = [var.vpc_cidr]
+  }
+
+  ingress {
+    description = "Active Directory - NetBIOS datagram service"
+    from_port   = 138
+    to_port     = 138
+    protocol    = "udp"
+    cidr_blocks = [var.vpc_cidr]
+  }
+
+  ingress {
+    description = "Active Directory - NetBIOS session service"
+    from_port   = 139
+    to_port     = 139
+    protocol    = "tcp"
+    cidr_blocks = [var.vpc_cidr]
+  }
+
+  ingress {
+    description = "Active Directory - LDAP Connection to directory services"
+    from_port   = 389
+    to_port     = 389
+    protocol    = "tcp"
+    cidr_blocks = [var.vpc_cidr]
+  }
+
+  ingress {
+    description = "Active Directory - LDAP Basic communication with DC"
+    from_port   = 389
+    to_port     = 389
+    protocol    = "udp"
+    cidr_blocks = [var.vpc_cidr]
+  }
+
+  ingress {
+    description = "Active Directory - SMB Communication with the Netlogon service"
+    from_port   = 445
+    to_port     = 445
+    protocol    = "tcp"
+    cidr_blocks = [var.vpc_cidr]
+  }
+
+  ingress {
+    description = "Active Directory - LDAP SSL"
+    from_port   = 636
+    to_port     = 636
+    protocol    = "tcp"
+    cidr_blocks = [var.vpc_cidr]
+  }
+
+  ingress {
+    description = "Active Directory - GC"
+    from_port   = 3268
+    to_port     = 3268
+    protocol    = "tcp"
+    cidr_blocks = [var.vpc_cidr]
+  }
+
+  ingress {
+    description = "Active Directory - GC SSL"
+    from_port   = 3269
+    to_port     = 3269
+    protocol    = "tcp"
+    cidr_blocks = [var.vpc_cidr]
+  }
+
   ingress {
     description = "RDP from VPN clients"
     from_port   = 3389
@@ -139,7 +249,7 @@ resource "aws_security_group" "windows_ad" {
     cidr_blocks = [var.vpc_cidr]
   }
 
-  # アウトバウンド
+  # アウトバウンドはVPC内部の通信のみ許可
   egress {
     description = "Allow all outbound traffic"
     from_port   = 0
@@ -159,6 +269,7 @@ resource "aws_security_group" "vpn_endpoint" {
   description = "Security group for VPN endpoint"
   vpc_id      = aws_vpc.main.id
 
+  # VPN接続開始フェーズ: VPNクライアントツールからの初期接続用
   ingress {
     description = "VPN Initial Connection"
     from_port   = 443
@@ -175,6 +286,7 @@ resource "aws_security_group" "vpn_endpoint" {
     cidr_blocks = [var.my_ip]
   }
 
+  # VPC内部への通信のみ許可
   egress {
     description = "Access to VPC resources"
     from_port   = 0
@@ -188,12 +300,13 @@ resource "aws_security_group" "vpn_endpoint" {
   }
 }
 
-# VPN接続確立後のクライアント用セキュリティグループ（追加）
+# VPN接続確立後のクライアント用セキュリティグループ
 resource "aws_security_group" "vpn_clients" {
   name        = "vpn_clients"
   description = "Security group for established VPN connections"
   vpc_id      = aws_vpc.main.id
 
+  # VPN接続確立後フェーズ: VPC内のリソースへのアクセス
   ingress {
     description = "All traffic from VPN clients"
     from_port   = 0
@@ -242,7 +355,7 @@ resource "aws_security_group" "nat" {
   }
 }
 
-# 追加のセキュリティグループルール
+# Windows ADのセキュリティグループに追加
 resource "aws_security_group_rule" "windows_ad_dns_outbound" {
   type              = "egress"
   from_port         = 53
@@ -259,4 +372,4 @@ resource "aws_security_group_rule" "windows_ad_https_outbound" {
   protocol          = "tcp"
   cidr_blocks       = ["0.0.0.0/0"]
   security_group_id = aws_security_group.windows_ad.id
-} 
+}
