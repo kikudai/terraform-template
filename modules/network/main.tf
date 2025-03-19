@@ -342,12 +342,30 @@ resource "aws_security_group" "nat" {
   description = "Security group for NAT instance"
   vpc_id      = aws_vpc.main.id
 
+  # VPC内からの全てのトラフィックを許可
   ingress {
     description = "Allow inbound traffic from VPC"
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
     cidr_blocks = [var.vpc_cidr]
+  }
+
+  # プライベートサブネットからのアウトバウンドトラフィックに対する応答のみを許可
+  ingress {
+    description = "Allow HTTP return traffic from internet"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = [var.subnet_cidrs["private_1a"]]
+  }
+
+  ingress {
+    description = "Allow HTTPS return traffic from internet"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = [var.subnet_cidrs["private_1a"]]
   }
 
   egress {
