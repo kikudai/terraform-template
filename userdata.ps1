@@ -312,6 +312,14 @@ try {
 # Create a flag file to indicate first boot is complete
 New-Item -Path C:\Windows\Temp\FirstBootComplete -ItemType File -Force
 
+# Disable MapsBroker service
+# 不要のため無効化
+sc.exe config MapsBroker start= disabled
+
+# Disable AWSLiteAgent service
+# Windows Server 2016 では 上手く動かなかったので無効化
+sc.exe config AWSLiteAgent start= disabled
+
 # Restart system
 Restart-Computer -Force
 </powershell>
