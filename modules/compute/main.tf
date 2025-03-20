@@ -9,13 +9,14 @@ resource "aws_instance" "nat" {
 
   associate_public_ip_address = true
 
+  # 
   user_data = <<-EOF
               #!/bin/bash
               # Enable IP forwarding
               echo "net.ipv4.ip_forward = 1" | sudo tee -a /etc/sysctl.conf
               sudo sysctl -p
               # Configure NAT
-              sudo iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
+              sudo iptables -t nat -A POSTROUTING -o ens5 -j MASQUERADE
               # Save iptables rules
               sudo yum install -y iptables-services
               sudo service iptables save

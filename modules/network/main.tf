@@ -257,13 +257,14 @@ resource "aws_security_group" "windows_ad" {
     cidr_blocks = [var.vpc_cidr]
   }
 
-  # アウトバウンドはVPC内部の通信のみ許可
+  # アウトバウンドはすべての通信を許可
+  # NAT インスタンスを利用するので問題ない認識
   egress {
     description = "Allow all outbound traffic"
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
-    cidr_blocks = [var.vpc_cidr, var.vpn_client_cidr]
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
   tags = {
@@ -379,25 +380,6 @@ resource "aws_security_group" "nat" {
   tags = {
     Name = "nat_instance"
   }
-}
-
-# Windows ADのセキュリティグループに追加
-resource "aws_security_group_rule" "windows_ad_dns_outbound" {
-  type              = "egress"
-  from_port         = 53
-  to_port           = 53
-  protocol          = "udp"
-  cidr_blocks       = ["0.0.0.0/0"]
-  security_group_id = aws_security_group.windows_ad.id
-}
-
-resource "aws_security_group_rule" "windows_ad_https_outbound" {
-  type              = "egress"
-  from_port         = 443
-  to_port           = 443
-  protocol          = "tcp"
-  cidr_blocks       = ["0.0.0.0/0"]
-  security_group_id = aws_security_group.windows_ad.id
 }
 
 # NATインスタンスの参照
