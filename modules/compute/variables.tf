@@ -38,11 +38,6 @@ variable "iam_instance_profile" {
   type        = string
 }
 
-variable "userdata_template_path" {
-  description = "User dataテンプレートファイルのパス"
-  type        = string
-}
-
 variable "install_adds" {
   description = "Active Directory Domain Servicesをインストールするかどうか"
   type        = bool

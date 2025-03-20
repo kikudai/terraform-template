@@ -28,7 +28,7 @@ resource "aws_instance" "windows_ad" {
 
   associate_public_ip_address = false
 
-  user_data_base64 = base64encode(templatefile(var.userdata_template_path, {
+  user_data_base64 = base64encode(templatefile("${path.module}/scripts/userdata.ps1", {
     install_adds         = tostring(var.install_adds)
     domain_name         = var.domain_name
     domain_netbios_name = var.domain_netbios_name
