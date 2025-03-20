@@ -26,7 +26,7 @@ module "compute" {
   windows_security_group_id = module.network.windows_ad_sg_id
   iam_instance_profile      = module.iam.instance_profile_name
   
-  userdata_template_path    = "${path.module}/../../userdata.ps1"
+  userdata_template_path    = "${path.module}/scripts/userdata.ps1"
   install_adds              = var.install_adds
   domain_name               = var.domain_name
   domain_netbios_name       = var.domain_netbios_name
