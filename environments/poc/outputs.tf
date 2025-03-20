@@ -6,6 +6,10 @@ output "windows_ad_private_ip" {
   value = module.compute.windows_ad_private_ip
 }
 
+output "nat_private_ip" {
+  value = module.compute.nat_private_ip
+}
+
 output "vpn_endpoint_dns" {
   description = "VPNエンドポイントのDNS名"
   value = module.vpn.vpn_endpoint_dns
