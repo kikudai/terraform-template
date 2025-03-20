@@ -257,13 +257,14 @@ resource "aws_security_group" "windows_ad" {
     cidr_blocks = [var.vpc_cidr]
   }
 
-  # アウトバウンドはVPC内部の通信のみ許可
+  # アウトバウンドはすべての通信を許可
+  # NATゲートウェイ利用前提であれば問題ない認識
   egress {
     description = "Allow all outbound traffic"
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
-    cidr_blocks = [var.vpc_cidr, var.vpn_client_cidr]
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
   tags = {
