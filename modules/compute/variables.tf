@@ -1,18 +1,3 @@
-variable "nat_ami" {
-  description = "NAT インスタンスのAMI ID"
-  type        = string
-}
-
-variable "public_subnet_id" {
-  description = "パブリックサブネットのID"
-  type        = string
-}
-
-variable "nat_security_group_id" {
-  description = "NAT インスタンスのセキュリティグループID"
-  type        = string
-}
-
 variable "key_name" {
   description = "Name of the key pair"
   type        = string

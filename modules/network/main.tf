@@ -59,8 +59,8 @@ resource "aws_route_table" "private" {
   vpc_id = aws_vpc.main.id
 
   route {
-    cidr_block           = "0.0.0.0/0"
-    network_interface_id = var.nat_instance_eni_id
+    cidr_block     = "0.0.0.0/0"
+    nat_gateway_id = aws_nat_gateway.main.id
   }
 
   tags = {
@@ -336,51 +336,6 @@ resource "aws_security_group" "vpn_clients" {
   }
 }
 
-# NATインスタンス用のセキュリティグループ
-resource "aws_security_group" "nat" {
-  name        = "nat_instance"
-  description = "Security group for NAT instance"
-  vpc_id      = aws_vpc.main.id
-
-  # VPC内からの全てのトラフィックを許可
-  ingress {
-    description = "Allow inbound traffic from VPC"
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = [var.vpc_cidr]
-  }
-
-  # プライベートサブネットからのアウトバウンドトラフィックに対する応答のみを許可
-  ingress {
-    description = "Allow HTTP return traffic from internet"
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = [var.subnet_cidrs["private_1a"]]
-  }
-
-  ingress {
-    description = "Allow HTTPS return traffic from internet"
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = [var.subnet_cidrs["private_1a"]]
-  }
-
-  egress {
-    description = "Allow all outbound traffic"
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = {
-    Name = "nat_instance"
-  }
-}
-
 # Windows ADのセキュリティグループに追加
 resource "aws_security_group_rule" "windows_ad_dns_outbound" {
   type              = "egress"
@@ -400,7 +355,21 @@ resource "aws_security_group_rule" "windows_ad_https_outbound" {
   security_group_id = aws_security_group.windows_ad.id
 }
 
-# NATインスタンスの参照
-data "aws_instance" "nat" {
-  instance_id = var.nat_instance_id
+# NATゲートウェイ用のElastic IP
+resource "aws_eip" "nat" {
+  domain = "vpc"
+  
+  tags = {
+    Name = "nat-gateway-eip"
+  }
+}
+
+# NATゲートウェイ
+resource "aws_nat_gateway" "main" {
+  allocation_id = aws_eip.nat.id
+  subnet_id     = aws_subnet.public_1a.id
+
+  tags = {
+    Name = "windows-ad-natgw"
+  }
 }

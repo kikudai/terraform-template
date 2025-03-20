@@ -27,10 +27,6 @@ output "vpn_endpoint_sg_id" {
   value = aws_security_group.vpn_endpoint.id
 }
 
-output "nat_sg_id" {
-  value = aws_security_group.nat.id
-}
-
 output "vpn_clients_sg_id" {
   value = aws_security_group.vpn_clients.id
 } 

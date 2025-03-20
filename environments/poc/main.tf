@@ -7,8 +7,6 @@ module "network" {
 
   vpc_cidr         = var.vpc_cidr
   subnet_cidrs     = var.subnet_cidrs
-  nat_instance_id = module.compute.nat_instance_id
-  nat_instance_eni_id = module.compute.nat_instance_eni_id
   vpn_client_cidr  = var.vpn_client_cidr
   my_ip            = var.my_ip
 }
@@ -17,10 +15,6 @@ module "compute" {
   source = "../../modules/compute"
 
   key_name                  = var.key_name
-  nat_ami                   = var.nat_ami
-  public_subnet_id          = module.network.public_subnet_1a_id
-  nat_security_group_id     = module.network.nat_sg_id
-  
   windows_ami               = var.windows_ami
   private_subnet_id         = module.network.private_subnet_1a_id
   windows_security_group_id = module.network.windows_ad_sg_id
