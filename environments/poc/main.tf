@@ -5,11 +5,12 @@ provider "aws" {
 module "network" {
   source = "../../modules/network"
 
-  vpc_cidr                 = var.vpc_cidr
-  subnet_cidrs             = var.subnet_cidrs
-  nat_network_interface_id = module.compute.nat_network_interface_id
-  vpn_client_cidr         = var.vpn_client_cidr
-  my_ip                   = var.my_ip
+  vpc_cidr         = var.vpc_cidr
+  subnet_cidrs     = var.subnet_cidrs
+  nat_instance_id = module.compute.nat_instance_id
+  nat_instance_eni_id = module.compute.nat_instance_eni_id
+  vpn_client_cidr  = var.vpn_client_cidr
+  my_ip            = var.my_ip
 }
 
 module "compute" {

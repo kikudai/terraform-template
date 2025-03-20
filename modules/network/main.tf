@@ -60,7 +60,7 @@ resource "aws_route_table" "private" {
 
   route {
     cidr_block           = "0.0.0.0/0"
-    network_interface_id = var.nat_network_interface_id
+    network_interface_id = var.nat_instance_eni_id
   }
 
   tags = {
@@ -398,4 +398,9 @@ resource "aws_security_group_rule" "windows_ad_https_outbound" {
   protocol          = "tcp"
   cidr_blocks       = ["0.0.0.0/0"]
   security_group_id = aws_security_group.windows_ad.id
+}
+
+# NATインスタンスの参照
+data "aws_instance" "nat" {
+  instance_id = var.nat_instance_id
 }

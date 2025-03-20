@@ -5,7 +5,7 @@ resource "aws_instance" "nat" {
   subnet_id              = var.public_subnet_id
   vpc_security_group_ids = [var.nat_security_group_id]
   source_dest_check      = false  # NATインスタンスには必須の設定
-  key_name              = var.key_name
+  key_name               = var.key_name
 
   associate_public_ip_address = true
 
