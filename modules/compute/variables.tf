@@ -43,6 +43,16 @@ variable "install_adds" {
   type        = bool
 }
 
+variable "top_domain_name" {
+  description = "Active Directory トップドメイン名"
+  type        = string
+}
+
+variable "second_domain_name" {
+  description = "Active Directory セカンドドメイン名"
+  type        = string
+}
+
 variable "domain_name" {
   description = "Active Directoryドメイン名"
   type        = string

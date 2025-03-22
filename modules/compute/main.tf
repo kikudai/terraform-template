@@ -30,6 +30,8 @@ resource "aws_instance" "windows_ad" {
 
   user_data_base64 = base64encode(templatefile("${path.module}/scripts/userdata.ps1", {
     install_adds         = tostring(var.install_adds)
+    top_domain_name         = var.top_domain_name
+    second_domain_name         = var.second_domain_name
     domain_name         = var.domain_name
     domain_netbios_name = var.domain_netbios_name
     domain_admin_password = var.domain_admin_password

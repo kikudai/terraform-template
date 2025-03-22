@@ -27,6 +27,8 @@ module "compute" {
   iam_instance_profile      = module.iam.instance_profile_name
   
   install_adds              = var.install_adds
+  top_domain_name           = var.top_domain_name
+  second_domain_name        = var.second_domain_name
   domain_name               = var.domain_name
   domain_netbios_name       = var.domain_netbios_name
   domain_admin_password     = var.domain_admin_password
