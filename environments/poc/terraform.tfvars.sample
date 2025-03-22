@@ -24,7 +24,9 @@ windows_ami         = "ami-05664ae0ae93d4f43"
 # Active Directory Domain Services 利用有無
 install_adds        = true
 
-domain_name         = "kiku.local"
-domain_netbios_name = "KIKU"
+top_domain_name = "local"
+second_domain_name = "example"
+domain_name         = "example.local"
+domain_netbios_name = "EXAMPLE"
 
 # domain_admin_password は terraform 実行時入力
