@@ -24,8 +24,6 @@ windows_ami         = "ami-05664ae0ae93d4f43"
 # Active Directory Domain Services 利用有無
 install_adds        = true
 
-top_domain_name = "local"
-second_domain_name = "example"
 domain_name         = "example.local"
 domain_netbios_name = "EXAMPLE"
 
