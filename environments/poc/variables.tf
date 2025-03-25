@@ -58,4 +58,14 @@ variable "domain_admin_password" {
   description = "Password for Active Directory admin"
   type        = string
   sensitive   = true
+}
+
+variable "windows_ad_private_ip" {
+  description = "Fixed private IP for Windows AD server"
+  type        = string
+}
+
+variable "windows_entra_private_ip" {
+  description = "Fixed private IP for Windows Entra Connect server"
+  type        = string
 } 

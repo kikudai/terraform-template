@@ -28,6 +28,8 @@ resource "aws_instance" "windows_ad" {
 
   associate_public_ip_address = false
 
+  private_ip = var.windows_ad_private_ip
+
   user_data_base64 = base64encode(templatefile("${path.module}/scripts/userdata.ps1", {
     install_adds          = tostring(var.install_adds)
     domain_name           = var.domain_name
@@ -72,6 +74,8 @@ resource "aws_instance" "windows_entra" {
   key_name              = var.key_name
 
   associate_public_ip_address = false
+
+  private_ip = var.windows_entra_private_ip
 
   user_data_base64 = base64encode(templatefile("${path.module}/scripts/entra_userdata.ps1", {
     domain_name           = var.domain_name

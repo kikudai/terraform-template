@@ -30,6 +30,9 @@ module "compute" {
   domain_name               = var.domain_name
   domain_netbios_name       = var.domain_netbios_name
   domain_admin_password     = var.domain_admin_password
+  
+  windows_ad_private_ip    = var.windows_ad_private_ip
+  windows_entra_private_ip = var.windows_entra_private_ip
 }
 
 module "iam" {
