@@ -60,4 +60,32 @@ resource "local_file" "private_key" {
   content         = tls_private_key.windows_key.private_key_pem
   filename        = "${path.module}/windows_ad_key.pem"
   file_permission = "0600"
-} 
+}
+
+# Windows Entra Connect サーバー
+resource "aws_instance" "windows_entra" {
+  ami                    = var.windows_ami
+  instance_type          = "t3.small"
+  subnet_id              = var.private_subnet_id
+  vpc_security_group_ids = [var.windows_security_group_id]
+  iam_instance_profile   = var.iam_instance_profile
+  key_name              = var.key_name
+
+  associate_public_ip_address = false
+
+  user_data_base64 = base64encode(templatefile("${path.module}/scripts/entra_userdata.ps1", {
+    domain_name           = var.domain_name
+    domain_netbios_name   = var.domain_netbios_name
+    domain_admin_password = var.domain_admin_password
+  }))
+
+  metadata_options {
+    http_endpoint = "enabled"
+    http_tokens   = "required"
+    http_put_response_hop_limit = 1
+  }
+
+  tags = {
+    Name = "WindowsEntraConnectServer"
+  }
+}
