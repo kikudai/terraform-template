@@ -27,4 +27,8 @@ install_adds        = true
 domain_name         = "example.local"
 domain_netbios_name = "EXAMPLE"
 
+# 固定プライベートIP設定
+windows_ad_private_ip    = "10.0.3.10"
+windows_entra_private_ip = "10.0.3.20"
+
 # domain_admin_password は terraform 実行時入力

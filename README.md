@@ -196,3 +196,14 @@ flowchart TB
 ## ライセンス
 
 MIT
+
+
+## その他
+
+```
+# Entra Connect サーバーのみ削除
+terraform destroy -target=module.compute.aws_instance.windows_entra
+
+# Entra Connect サーバーのみ再作成
+terraform apply -target=module.compute.aws_instance.windows_entra
+```
