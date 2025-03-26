@@ -140,75 +140,6 @@ try {
         Write-Host "Stack Trace: $($_.ScriptStackTrace)"
         throw
     }
-
-    # ADサーバーが利用可能になるまで待機
-    $domain = "${domain_name}"
-    $maxAttempts = 30
-    ${attempt} = 0
-    $success = $false
-
-    Write-Host "Waiting for AD server to become available..."
-    do {
-        ${attempt}++
-        try {
-            $result = Test-NetConnection -ComputerName "${windows_ad_private_ip}" -Port 389 -WarningAction SilentlyContinue
-            if ($result.TcpTestSucceeded) {
-                Write-Host "AD server is available!"
-                $success = $true
-                break
-            }
-        } catch {
-            Write-Host "Attempt ${attempt}: AD server not yet available..."
-        }
-        Start-Sleep -Seconds 30
-    } while (${attempt} -lt $maxAttempts)
-
-    if (-not $success) {
-        throw "AD server did not become available within the timeout period"
-    }
-
-    # 追加の待機時間（ADサービスの完全な起動を待つ）
-    Write-Host "Waiting additional time for AD services to be fully operational..."
-    Start-Sleep -Seconds 180
-    
-    # AWS Systems Managerからパスワードを取得
-    Write-Host "Getting AD admin password from AWS Systems Manager..."
-    try {
-        # AWS Tools for PowerShellモジュールのインストール（必要な場合）
-        if (!(Get-Module -ListAvailable -Name AWS.Tools.SimpleSystemsManagement)) {
-            Install-Module -Name AWS.Tools.SimpleSystemsManagement -Force
-        }
-
-        # リージョンの設定
-        $region = Invoke-RestMethod -Headers @{"X-aws-ec2-metadata-token" = $token} -Uri http://169.254.169.254/latest/meta-data/placement/region
-        Set-DefaultAWSRegion -Region $region
-
-        # パラメータストアからパスワードを取得
-        $parameterName = "/ad/admin/password"  # パラメータ名は適宜変更してください
-        $securePassword = (Get-SSMParameter -Name $parameterName -WithDecryption $true).Value
-    } catch {
-        Write-Host "Error getting password from SSM: $_"
-        Write-Host "Stack Trace: $($_.ScriptStackTrace)"
-        throw
-    }
-
-    # ドメイン参加用のクレデンシャルを作成
-    $password = $securePassword | ConvertTo-SecureString -AsPlainText -Force
-    $username = "$${domain_netbios_name}\Administrator"
-    $credential = New-Object System.Management.Automation.PSCredential($username, $password)
-
-    # ドメイン参加を試行
-    Write-Host "Attempting to join domain: $domain"
-    try {
-        Add-Computer -DomainName $domain -Credential $credential -Restart -Force -Verbose
-        Write-Host "Successfully joined domain. System will restart."
-    } catch {
-        Write-Host "Error joining domain: $_"
-        Write-Host "Stack Trace: $($_.ScriptStackTrace)"
-        throw
-    }
-
-    Write-Host "初期設定が完了しました。システムを再起動します。"
 } catch {
     $errorMessage = "エラーが発生しました: $_`nスタックトレース: $($_.ScriptStackTrace)"
     Write-Host $errorMessage
@@ -219,7 +150,4 @@ try {
     Add-Content -Path $completeLogPath -Value "[$timestamp] Completing Entra Connect Server setup"
     Stop-Transcript
 }
-
-# Restart system
-Restart-Computer -Force
 </powershell> 

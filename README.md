@@ -207,3 +207,8 @@ terraform destroy -target=module.compute.aws_instance.windows_entra
 # Entra Connect サーバーのみ再作成
 terraform apply -target=module.compute.aws_instance.windows_entra
 ```
+
+## ドメイン参加スクリプト
+```
+.\Join-Domain.ps1 -DomainName "sample.local" -DomainNetbiosName "SAMPLE" -AdServerIP "10.0.3.10"
+```

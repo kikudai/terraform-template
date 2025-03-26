@@ -80,7 +80,6 @@ resource "aws_instance" "windows_entra" {
   user_data_base64 = base64encode(templatefile("${path.module}/scripts/entra_userdata.ps1", {
     domain_name           = var.domain_name
     domain_netbios_name   = var.domain_netbios_name
-    domain_admin_password = var.domain_admin_password
     windows_ad_private_ip = var.windows_ad_private_ip
   }))
 
@@ -99,41 +98,9 @@ resource "aws_instance" "windows_entra" {
     encrypted   = true
   }
 
-  get_password_data = true
-
   tags = {
     Name = "WindowsEntraConnectServer"
   }
-}
 
-# IAMポリシーにSSMパラメータストアへのアクセス権を追加
-resource "aws_iam_role_policy" "ssm_policy" {
-  name = "ssm-parameter-access"
-  role = aws_iam_role.ec2_role.id  # 既存のIAMロール
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect = "Allow"
-        Action = [
-          "ssm:GetParameter",
-          "ssm:GetParameters"
-        ]
-        Resource = "arn:aws:ssm:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:parameter/*"
-      }
-    ]
-  })
-}
-
-# ADサーバーのパスワードをSSMパラメータストアに保存
-resource "aws_ssm_parameter" "ad_admin_password" {
-  name        = "/ad/admin/password"
-  description = "AD Administrator Password"
-  type        = "SecureString"
-  value       = var.domain_admin_password  # または適切なパスワード取得方法
-
-  tags = {
-    Environment = "production"
-  }
+  depends_on = [aws_instance.windows_ad]
 }
